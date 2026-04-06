@@ -1,0 +1,19 @@
+# node
+node_modules
+dist
+
+# env
+.env
+
+# prisma
+.prisma
+
+# logs
+logs
+*.log
+
+# OS
+.DS_Store
+
+# vscode
+.vscode
