@@ -7,6 +7,7 @@ import { EventModule } from './modules/event/event.module';
 import { ProductModule } from './modules/product/product.module';
 import { FeedModule } from './modules/feed/feed.module';
 import { InteractionModule } from './modules/interaction/interaction.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { InteractionModule } from './modules/interaction/interaction.module';
     ProductModule,
     FeedModule,
     InteractionModule,
+    SearchModule,
   ],
   controllers: [TestController],
 })
