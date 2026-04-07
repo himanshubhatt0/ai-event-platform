@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { EventModule } from './modules/event/event.module';
 import { ProductModule } from './modules/product/product.module';
+import { FeedModule } from './modules/feed/feed.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ProductModule } from './modules/product/product.module';
     OrganizationModule,
     EventModule,
     ProductModule,
+    FeedModule,
   ],
   controllers: [TestController],
 })
