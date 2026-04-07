@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException, HttpException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  HttpException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -12,13 +17,15 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   async register(data: RegisterDto) {
     try {
       // Validate email format
       if (!data.email || !this.isValidEmail(data.email)) {
-        throw new BadRequestException(AUTH_CONSTANTS.ERRORS.INVALID_EMAIL_FORMAT);
+        throw new BadRequestException(
+          AUTH_CONSTANTS.ERRORS.INVALID_EMAIL_FORMAT,
+        );
       }
 
       // Check if email already exists
@@ -27,11 +34,16 @@ export class AuthService {
       });
 
       if (existingUser) {
-        throw new BadRequestException(AUTH_CONSTANTS.ERRORS.EMAIL_ALREADY_EXISTS);
+        throw new BadRequestException(
+          AUTH_CONSTANTS.ERRORS.EMAIL_ALREADY_EXISTS,
+        );
       }
 
       // Validate password
-      if (!data.password || data.password.length < AUTH_CONSTANTS.VALIDATION.PASSWORD_MIN_LENGTH) {
+      if (
+        !data.password ||
+        data.password.length < AUTH_CONSTANTS.VALIDATION.PASSWORD_MIN_LENGTH
+      ) {
         throw new BadRequestException(AUTH_CONSTANTS.ERRORS.PASSWORD_TOO_SHORT);
       }
 
@@ -67,9 +79,7 @@ export class AuthService {
       }
 
       // fallback
-      throw new BadRequestException(
-        AUTH_CONSTANTS.ERRORS.REGISTER_FAILED,
-      );
+      throw new BadRequestException(AUTH_CONSTANTS.ERRORS.REGISTER_FAILED);
     }
   }
 
@@ -80,13 +90,17 @@ export class AuthService {
       });
 
       if (!user) {
-        throw new UnauthorizedException(AUTH_CONSTANTS.ERRORS.INVALID_CREDENTIALS);
+        throw new UnauthorizedException(
+          AUTH_CONSTANTS.ERRORS.INVALID_CREDENTIALS,
+        );
       }
 
       const isMatch = await bcrypt.compare(data.password, user.password);
 
       if (!isMatch) {
-        throw new UnauthorizedException(AUTH_CONSTANTS.ERRORS.INVALID_CREDENTIALS);
+        throw new UnauthorizedException(
+          AUTH_CONSTANTS.ERRORS.INVALID_CREDENTIALS,
+        );
       }
 
       const token = this.jwtService.sign({ userId: user.id });
