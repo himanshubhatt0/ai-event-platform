@@ -4,6 +4,7 @@ import { TestController } from './test.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationModule } from './modules/organization/organization.module';
 import { EventModule } from './modules/event/event.module';
+import { ProductModule } from './modules/product/product.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { EventModule } from './modules/event/event.module';
     AuthModule,
     OrganizationModule,
     EventModule,
+    ProductModule,
   ],
   controllers: [TestController],
 })
