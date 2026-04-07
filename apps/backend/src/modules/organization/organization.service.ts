@@ -19,10 +19,22 @@ export class OrganizationService {
       throw new BadRequestException(ORGANIZATION_CONSTANTS.ERRORS.NAME_REQUIRED);
     }
 
+    const normalizedName = data.name.trim();
+
+    const existingOrganization = await this.prisma.organization.findFirst({
+      where: { name: normalizedName },
+    });
+
+    if (existingOrganization) {
+      throw new BadRequestException(
+        ORGANIZATION_CONSTANTS.ERRORS.ORGANIZATION_NAME_ALREADY_EXISTS,
+      );
+    }
+
     try {
       return await this.prisma.organization.create({
         data: {
-          name: data.name.trim(),
+          name: normalizedName,
         },
       });
     } catch (error: unknown) {

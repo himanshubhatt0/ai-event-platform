@@ -20,7 +20,7 @@ model User {
 
 model Organization {
   id        String    @id @default(uuid())
-  name      String
+  name      String    @unique
   createdAt DateTime  @default(now())
   events    Event[]
   products  Product[]
