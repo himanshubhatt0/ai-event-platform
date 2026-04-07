@@ -68,7 +68,7 @@ export class AuthService {
 
       // fallback
       throw new BadRequestException(
-        AUTH_CONSTANTS.ERRORS.LOGIN_FAILED,
+        AUTH_CONSTANTS.ERRORS.REGISTER_FAILED,
       );
     }
   }

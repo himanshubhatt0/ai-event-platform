@@ -13,6 +13,7 @@ export const AUTH_CONSTANTS = {
     NAME_REQUIRED: 'Name is required',
     INVALID_CREDENTIALS: 'Invalid email or password',
     LOGIN_FAILED: 'Login failed. Please try again.',
+    REGISTER_FAILED: 'Register failed. Please try again.',
   },
 
   // Success Messages
