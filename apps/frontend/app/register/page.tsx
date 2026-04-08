@@ -1,31 +1,55 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '@/redux/slices/authSlice';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { getCookie } from '@/utils/cookies';
+import { Toast } from '@/components/Toast';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const dispatch = useDispatch();
   const router = useRouter();
   const { loading, error } = useSelector((state: any) => state.auth);
 
+  useEffect(() => {
+    if (getCookie('auth_token')) {
+      router.push('/dashboard');
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (error) {
+      setToastType('error');
+      setToastMessage(error);
+    }
+  }, [error]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
       await dispatch(registerUser({ email, password, name })).unwrap();
-      router.push('/dashboard');
-    } catch (err) {
-      console.error('Registration failed:', err);
+      sessionStorage.setItem(
+        'toast_message',
+        JSON.stringify({ type: 'success', message: 'Registration successful! Please log in.' }),
+      );
+      router.push('/login');
+    } catch (err: any) {
+      setToastType('error');
+      setToastMessage(err?.message || 'Registration failed.');
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+      <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -83,12 +107,6 @@ export default function RegisterPage() {
               />
             </div>
           </div>
-
-          {error && (
-            <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md">
-              {typeof error === 'string' ? error : 'Registration failed'}
-            </div>
-          )}
 
           <div>
             <button

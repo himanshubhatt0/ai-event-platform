@@ -3,30 +3,45 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '@/redux/slices/authSlice';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { getCookie } from '@/utils/cookies';
+import { Toast } from '@/components/Toast';
 
 export default function DashboardPage() {
   const { user, token } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const authToken = getCookie('auth_token');
+  const isAuthenticated = Boolean(token || authToken);
 
   useEffect(() => {
-    if (!token) {
+    if (!isAuthenticated) {
       router.push('/login');
     }
-  }, [token, router]);
+
+    const toast = sessionStorage.getItem('toast_message');
+    if (toast) {
+      const payload = JSON.parse(toast);
+      setToastType(payload.type);
+      setToastMessage(payload.message);
+      sessionStorage.removeItem('toast_message');
+    }
+  }, [isAuthenticated, router]);
 
   const handleLogout = () => {
     dispatch(logout());
     router.push('/login');
   };
 
-  if (!token) {
+  if (!isAuthenticated) {
     return null;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">

@@ -1,4 +1,6 @@
 import { ReduxProvider } from '@/redux/provider';
+import AuthInitializer from './AuthInitializer';
+import '@/app/globals.css';
 
 export default function RootLayout({
   children,
@@ -8,7 +10,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ReduxProvider>{children}</ReduxProvider>
+        <ReduxProvider>
+          <AuthInitializer>{children}</AuthInitializer>
+        </ReduxProvider>
       </body>
     </html>
   );

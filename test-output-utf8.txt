@@ -1,0 +1,19 @@
+﻿npm : npm error code ENOENT
+At line:1 char:1
++ npm test -- --runInBand --silent 2>&1 | Out-File -FilePath .\test-out ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm error code ENOENT:String) [], 
+    RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm error syscall open
+npm error path 
+C:\Users\Development\Desktop\Ai-event-plateform\ai-event-platform\package.json
+npm error errno -4058
+npm error enoent Could not read package.json: Error: ENOENT: no such file or 
+directory, open 'C:\Users\Development\Desktop\Ai-event-plateform\ai-event-platf
+orm\package.json'
+npm error enoent This is related to npm not being able to find a file.
+npm error enoent
+npm error A complete log of this run can be found in: C:\Users\Development\AppD
+ata\Local\npm-cache\_logs\2026-04-08T10_28_09_512Z-debug-0.log

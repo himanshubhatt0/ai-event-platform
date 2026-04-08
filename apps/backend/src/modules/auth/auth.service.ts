@@ -62,7 +62,11 @@ export class AuthService {
         },
       });
 
-      return user;
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      };
     } catch (error: unknown) {
       // If already a NestJS exception → rethrow
       if (error instanceof HttpException) {

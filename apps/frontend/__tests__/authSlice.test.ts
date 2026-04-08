@@ -55,22 +55,17 @@ describe('authSlice', () => {
   describe('registerUser', () => {
     it('should handle successful registration', async () => {
       const mockUser = { id: '1', email: 'test@example.com', name: 'Test User' };
-      const mockToken = 'mock-jwt-token';
 
-      // Mock API responses
-      mockedApi.post
-        .mockResolvedValueOnce({ data: mockUser }) // register
-        .mockResolvedValueOnce({ data: { access_token: mockToken } }); // login
-      mockedApi.get.mockResolvedValueOnce({ data: mockUser });
+      // Mock API response for registration
+      mockedApi.post.mockResolvedValueOnce({ data: mockUser });
 
       await store.dispatch(registerUser({ email: 'test@example.com', password: 'password', name: 'Test User' }));
 
       const state = store.getState().auth;
-      expect(state.user).toEqual(mockUser);
-      expect(state.token).toBe(mockToken);
+      expect(state.user).toBe(null);
+      expect(state.token).toBe(null);
       expect(state.loading).toBe(false);
       expect(state.error).toBe(null);
-      expect(localStorage.getItem('token')).toBe(mockToken);
     });
 
     it('should handle registration failure', async () => {
