@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 
@@ -12,7 +21,23 @@ export class EventController {
   }
 
   @Get()
-  getAll() {
+  getAll(@Query('organizationId') organizationId?: string) {
+    if (organizationId) {
+      return this.eventService.getEventsByOrganization(organizationId);
+    }
     return this.eventService.getEvents();
+  }
+
+  @Get(':eventId')
+  getById(@Param('eventId', new ParseUUIDPipe()) eventId: string) {
+    return this.eventService.getEventById(eventId);
+  }
+
+  @Put(':eventId')
+  update(
+    @Param('eventId', new ParseUUIDPipe()) eventId: string,
+    @Body() body: Partial<CreateEventDto>,
+  ) {
+    return this.eventService.updateEvent(eventId, body);
   }
 }

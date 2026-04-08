@@ -95,9 +95,102 @@ export class ProductService {
     }
   }
 
+  async getProductsByOrganization(organizationId: string): Promise<Product[]> {
+    if (!organizationId?.trim()) {
+      throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.INVALID_ORG_ID);
+    }
+
+    try {
+      return await this.prisma.product.findMany({
+        where: { organizationId: organizationId.trim() },
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch (error: unknown) {
+      if (error instanceof BadRequestException) throw error;
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED);
+      }
+
+      throw new InternalServerErrorException(
+        PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED,
+      );
+    }
+  }
+
+  async getProductById(productId: string): Promise<Product> {
+    if (!productId?.trim()) {
+      throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.INVALID_ORG_ID);
+    }
+
+    try {
+      const product = await this.prisma.product.findUnique({
+        where: { id: productId.trim() },
+      });
+
+      if (!product) {
+        throw new NotFoundException(PRODUCT_CONSTANTS.ERRORS.ORGANIZATION_NOT_FOUND);
+      }
+
+      return product;
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException) throw error;
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED);
+      }
+
+      throw new InternalServerErrorException(
+        PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED,
+      );
+    }
+  }
+
+  async updateProduct(productId: string, data: Partial<CreateProductDto>): Promise<Product> {
+    if (!productId?.trim()) {
+      throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.INVALID_ORG_ID);
+    }
+
+    try {
+      const existingProduct = await this.prisma.product.findUnique({
+        where: { id: productId.trim() },
+      });
+
+      if (!existingProduct) {
+        throw new NotFoundException(PRODUCT_CONSTANTS.ERRORS.ORGANIZATION_NOT_FOUND);
+      }
+
+      const updateData: any = {};
+      if (data.title) updateData.title = data.title.trim();
+      if (data.description) updateData.description = data.description.trim();
+      if (data.price !== undefined) updateData.price = data.price;
+
+      return await this.prisma.product.update({
+        where: { id: productId.trim() },
+        data: updateData,
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException) throw error;
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED);
+      }
+
+      throw new InternalServerErrorException(
+        PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED,
+      );
+    }
+  }
+
   async getProducts(): Promise<Product[]> {
-    return this.prisma.product.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+    try {
+      return await this.prisma.product.findMany({
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch (error: unknown) {
+      throw new InternalServerErrorException(
+        PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED,
+      );
+    }
   }
 }

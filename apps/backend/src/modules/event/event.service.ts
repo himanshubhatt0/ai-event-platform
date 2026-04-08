@@ -94,9 +94,102 @@ export class EventService {
     }
   }
 
+  async getEventsByOrganization(organizationId: string): Promise<Event[]> {
+    if (!organizationId?.trim()) {
+      throw new BadRequestException(EVENT_CONSTANTS.ERRORS.INVALID_ORG_ID);
+    }
+
+    try {
+      return await this.prisma.event.findMany({
+        where: { organizationId: organizationId.trim() },
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch (error: unknown) {
+      if (error instanceof BadRequestException) throw error;
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new BadRequestException(EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED);
+      }
+
+      throw new InternalServerErrorException(
+        EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED,
+      );
+    }
+  }
+
+  async getEventById(eventId: string): Promise<Event> {
+    if (!eventId?.trim()) {
+      throw new BadRequestException(EVENT_CONSTANTS.ERRORS.INVALID_ORG_ID);
+    }
+
+    try {
+      const event = await this.prisma.event.findUnique({
+        where: { id: eventId.trim() },
+      });
+
+      if (!event) {
+        throw new NotFoundException(EVENT_CONSTANTS.ERRORS.ORGANIZATION_NOT_FOUND);
+      }
+
+      return event;
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException) throw error;
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new BadRequestException(EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED);
+      }
+
+      throw new InternalServerErrorException(
+        EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED,
+      );
+    }
+  }
+
+  async updateEvent(eventId: string, data: Partial<CreateEventDto>): Promise<Event> {
+    if (!eventId?.trim()) {
+      throw new BadRequestException(EVENT_CONSTANTS.ERRORS.INVALID_ORG_ID);
+    }
+
+    try {
+      const existingEvent = await this.prisma.event.findUnique({
+        where: { id: eventId.trim() },
+      });
+
+      if (!existingEvent) {
+        throw new NotFoundException(EVENT_CONSTANTS.ERRORS.ORGANIZATION_NOT_FOUND);
+      }
+
+      const updateData: any = {};
+      if (data.title) updateData.title = data.title.trim();
+      if (data.description) updateData.description = data.description.trim();
+      if (data.date) updateData.date = new Date(data.date);
+
+      return await this.prisma.event.update({
+        where: { id: eventId.trim() },
+        data: updateData,
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException) throw error;
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new BadRequestException(EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED);
+      }
+
+      throw new InternalServerErrorException(
+        EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED,
+      );
+    }
+  }
+
   async getEvents(): Promise<Event[]> {
-    return this.prisma.event.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+    try {
+      return await this.prisma.event.findMany({
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch (error: unknown) {
+      throw new InternalServerErrorException(
+        EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED,
+      );
+    }
   }
 }
