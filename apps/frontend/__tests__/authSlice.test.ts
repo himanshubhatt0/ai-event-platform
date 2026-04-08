@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import type { AppDispatch } from '@/redux/store';
 import authReducer, { loginUser, registerUser, logout } from '@/redux/slices/authSlice';
 import { api } from '@/services/api';
 
@@ -28,7 +29,7 @@ describe('authSlice', () => {
       mockedApi.post.mockResolvedValueOnce({ data: { access_token: mockToken } });
       mockedApi.get.mockResolvedValueOnce({ data: mockUser });
 
-      await store.dispatch(loginUser({ email: 'test@example.com', password: 'password' }));
+      await (store.dispatch as AppDispatch)(loginUser({ email: 'test@example.com', password: 'password' }));
 
       const state = store.getState().auth;
       expect(state.user).toEqual(mockUser);
@@ -42,7 +43,7 @@ describe('authSlice', () => {
       const errorMessage = 'Invalid credentials';
       mockedApi.post.mockRejectedValueOnce(new Error(errorMessage));
 
-      await store.dispatch(loginUser({ email: 'test@example.com', password: 'wrongpassword' }));
+      await (store.dispatch as AppDispatch)(loginUser({ email: 'test@example.com', password: 'wrongpassword' }));
 
       const state = store.getState().auth;
       expect(state.user).toBe(null);
@@ -59,7 +60,7 @@ describe('authSlice', () => {
       // Mock API response for registration
       mockedApi.post.mockResolvedValueOnce({ data: mockUser });
 
-      await store.dispatch(registerUser({ email: 'test@example.com', password: 'password', name: 'Test User' }));
+      await (store.dispatch as AppDispatch)(registerUser({ email: 'test@example.com', password: 'password', name: 'Test User' }));
 
       const state = store.getState().auth;
       expect(state.user).toBe(null);
@@ -72,7 +73,7 @@ describe('authSlice', () => {
       const errorMessage = 'Email already exists';
       mockedApi.post.mockRejectedValueOnce(new Error(errorMessage));
 
-      await store.dispatch(registerUser({ email: 'existing@example.com', password: 'password', name: 'Test User' }));
+      await (store.dispatch as AppDispatch)(registerUser({ email: 'existing@example.com', password: 'password', name: 'Test User' }));
 
       const state = store.getState().auth;
       expect(state.user).toBe(null);

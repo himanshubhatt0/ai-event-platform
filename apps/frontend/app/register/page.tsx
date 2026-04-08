@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getCookie } from '@/utils/cookies';
 import { Toast } from '@/components/Toast';
+import type { AppDispatch } from '@/redux/store';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -14,7 +15,7 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { loading, error, success } = useSelector((state: any) => state.auth);
 
