@@ -9,6 +9,7 @@ describe('OrganizationService', () => {
     organization: {
       create: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
     },
     user: {
       update: jest.fn(),
