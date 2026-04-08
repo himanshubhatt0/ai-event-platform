@@ -15,11 +15,12 @@ describe('SearchService', () => {
   beforeEach(async () => {
     jest.spyOn(aiService, 'getEmbedding').mockResolvedValue([0.1, 0.2, 0.3]);
     jest.spyOn(pineconeService.index, 'query').mockResolvedValue({
+      namespace: '',
       matches: [
         { id: 'e1', metadata: { type: 'event' }, score: 0.8 },
         { id: 'p1', metadata: { type: 'product' }, score: 0.9 },
       ],
-    });
+    } as any);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
