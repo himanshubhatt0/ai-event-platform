@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -41,7 +42,7 @@ export class EventService {
           title: title.trim(),
           description: description.trim(),
           date: new Date(date),
-          organizationId,
+          organizationId: organizationId!,
         },
       });
 
@@ -145,7 +146,7 @@ export class EventService {
     }
   }
 
-  async updateEvent(eventId: string, data: Partial<CreateEventDto>): Promise<Event> {
+  async updateEvent(eventId: string, data: Partial<CreateEventDto>, callerOrgId: string): Promise<Event> {
     if (!eventId?.trim()) {
       throw new BadRequestException(EVENT_CONSTANTS.ERRORS.INVALID_ORG_ID);
     }
@@ -159,6 +160,10 @@ export class EventService {
         throw new NotFoundException(EVENT_CONSTANTS.ERRORS.ORGANIZATION_NOT_FOUND);
       }
 
+      if (existingEvent.organizationId !== callerOrgId) {
+        throw new ForbiddenException('You can only update events belonging to your organization');
+      }
+
       const updateData: any = {};
       if (data.title) updateData.title = data.title.trim();
       if (data.description) updateData.description = data.description.trim();
@@ -170,6 +175,7 @@ export class EventService {
       });
     } catch (error: unknown) {
       if (error instanceof NotFoundException) throw error;
+      if (error instanceof ForbiddenException) throw error;
 
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new BadRequestException(EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED);
@@ -193,7 +199,7 @@ export class EventService {
     }
   }
 
-  async deleteEvent(eventId: string): Promise<Event> {
+  async deleteEvent(eventId: string, callerOrgId: string): Promise<Event> {
     if (!eventId?.trim()) {
       throw new BadRequestException(EVENT_CONSTANTS.ERRORS.INVALID_ORG_ID);
     }
@@ -207,6 +213,10 @@ export class EventService {
         throw new NotFoundException(EVENT_CONSTANTS.ERRORS.ORGANIZATION_NOT_FOUND);
       }
 
+      if (existingEvent.organizationId !== callerOrgId) {
+        throw new ForbiddenException('You can only delete events belonging to your organization');
+      }
+
       await this.prisma.interaction.deleteMany({
         where: { eventId: eventId.trim() },
       });
@@ -216,6 +226,7 @@ export class EventService {
       });
     } catch (error: unknown) {
       if (error instanceof NotFoundException) throw error;
+      if (error instanceof ForbiddenException) throw error;
 
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new BadRequestException(EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED);

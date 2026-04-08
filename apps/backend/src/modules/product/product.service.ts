@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -41,7 +42,7 @@ export class ProductService {
           title: title.trim(),
           description: description.trim(),
           price,
-          organizationId,
+          organizationId: organizationId!,
         },
       });
 
@@ -146,7 +147,7 @@ export class ProductService {
     }
   }
 
-  async updateProduct(productId: string, data: Partial<CreateProductDto>): Promise<Product> {
+  async updateProduct(productId: string, data: Partial<CreateProductDto>, callerOrgId: string): Promise<Product> {
     if (!productId?.trim()) {
       throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.INVALID_ORG_ID);
     }
@@ -160,6 +161,10 @@ export class ProductService {
         throw new NotFoundException(PRODUCT_CONSTANTS.ERRORS.ORGANIZATION_NOT_FOUND);
       }
 
+      if (existingProduct.organizationId !== callerOrgId) {
+        throw new ForbiddenException('You can only update products belonging to your organization');
+      }
+
       const updateData: any = {};
       if (data.title) updateData.title = data.title.trim();
       if (data.description) updateData.description = data.description.trim();
@@ -171,6 +176,7 @@ export class ProductService {
       });
     } catch (error: unknown) {
       if (error instanceof NotFoundException) throw error;
+      if (error instanceof ForbiddenException) throw error;
 
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED);
@@ -194,7 +200,7 @@ export class ProductService {
     }
   }
 
-  async deleteProduct(productId: string): Promise<Product> {
+  async deleteProduct(productId: string, callerOrgId: string): Promise<Product> {
     if (!productId?.trim()) {
       throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.INVALID_ORG_ID);
     }
@@ -208,6 +214,10 @@ export class ProductService {
         throw new NotFoundException(PRODUCT_CONSTANTS.ERRORS.ORGANIZATION_NOT_FOUND);
       }
 
+      if (existingProduct.organizationId !== callerOrgId) {
+        throw new ForbiddenException('You can only delete products belonging to your organization');
+      }
+
       await this.prisma.interaction.deleteMany({
         where: { productId: productId.trim() },
       });
@@ -217,6 +227,7 @@ export class ProductService {
       });
     } catch (error: unknown) {
       if (error instanceof NotFoundException) throw error;
+      if (error instanceof ForbiddenException) throw error;
 
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED);

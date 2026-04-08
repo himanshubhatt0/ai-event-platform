@@ -8,11 +8,13 @@ import {
   Post,
   Put,
   Query,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { OrgGuard } from '../auth/org.guard';
 
 @UseGuards(JwtAuthGuard)
 @Controller('product')
@@ -20,8 +22,13 @@ export class ProductController {
   constructor(private productService: ProductService) {}
 
   @Post()
-  create(@Body() body: CreateProductDto) {
-    return this.productService.createProduct(body);
+  @UseGuards(OrgGuard)
+  create(@Request() req, @Body() body: CreateProductDto) {
+    // organizationId always comes from JWT — body value is ignored
+    return this.productService.createProduct({
+      ...body,
+      organizationId: req.user.organizationId,
+    });
   }
 
   @Get()
@@ -38,15 +45,21 @@ export class ProductController {
   }
 
   @Put(':productId')
+  @UseGuards(OrgGuard)
   update(
+    @Request() req,
     @Param('productId', new ParseUUIDPipe()) productId: string,
     @Body() body: Partial<CreateProductDto>,
   ) {
-    return this.productService.updateProduct(productId, body);
+    return this.productService.updateProduct(productId, body, req.user.organizationId);
   }
 
   @Delete(':productId')
-  delete(@Param('productId', new ParseUUIDPipe()) productId: string) {
-    return this.productService.deleteProduct(productId);
+  @UseGuards(OrgGuard)
+  delete(
+    @Request() req,
+    @Param('productId', new ParseUUIDPipe()) productId: string,
+  ) {
+    return this.productService.deleteProduct(productId, req.user.organizationId);
   }
 }

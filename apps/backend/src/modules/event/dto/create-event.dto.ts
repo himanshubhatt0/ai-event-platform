@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength, IsDateString } from 'class-validator';
 import { EVENT_CONSTANTS } from '../event.constants';
 
 export class CreateEventDto {
@@ -15,7 +15,8 @@ export class CreateEventDto {
   @IsDateString()
   date!: string;
 
+  // Injected from JWT by the controller; not required in request body
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: EVENT_CONSTANTS.ERRORS.INVALID_ORG_ID })
-  organizationId!: string;
+  organizationId?: string;
 }

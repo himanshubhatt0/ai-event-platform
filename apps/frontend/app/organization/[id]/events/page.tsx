@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useSelector } from 'react-redux';
 import { getCookie } from '@/utils/cookies';
 import { organizationService, Event, Organization } from '@/services/organization.service';
 import Link from 'next/link';
@@ -11,6 +12,7 @@ export default function EventsManagementPage() {
   const router = useRouter();
   const params = useParams();
   const orgId = params.id as string;
+  const { user } = useSelector((state: any) => state.auth);
 
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
@@ -31,10 +33,24 @@ export default function EventsManagementPage() {
       router.push('/login');
       return;
     }
+
+    // Wait for redux user to be hydrated
+    if (!user) return;
+
+    if (!user.organizationId) {
+      router.replace('/dashboard');
+      return;
+    }
+
+    if (user.organizationId !== orgId) {
+      router.replace(`/organization/${user.organizationId}/events`);
+      return;
+    }
+
     if (orgId) {
       fetchData();
     }
-  }, [orgId, router]);
+  }, [orgId, router, user]);
 
   const fetchData = async () => {
     try {

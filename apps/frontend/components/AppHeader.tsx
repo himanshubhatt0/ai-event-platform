@@ -43,17 +43,17 @@ function getBreadcrumbs(pathname: string): Breadcrumb[] {
 
   if (segments[0] === 'organization') {
     if (segments.length === 1) {
-      return [{ label: 'Organization' }];
+      return [{ label: 'My Organization' }];
     }
 
     if (segments.length >= 3 && (segments[2] === 'events' || segments[2] === 'products')) {
       return [
-        { label: 'Organization', href: '/organization' },
+        { label: 'My Organization', href: `/organization/${segments[1]}/events` },
         { label: toTitleCase(segments[2]) },
       ];
     }
 
-    return [{ label: 'Organization' }];
+    return [{ label: 'My Organization' }];
   }
 
   return segments.map((segment, index) => {
@@ -121,12 +121,14 @@ export default function AppHeader() {
             >
               Search
             </Link>
-            <Link
-              href="/organization"
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition"
-            >
-              Organizations
-            </Link>
+            {user?.organizationId && (
+              <Link
+                href={`/organization/${user.organizationId}/events`}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition"
+              >
+                My Organization
+              </Link>
+            )}
             <button
               onClick={handleLogout}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-150 ease-in-out"

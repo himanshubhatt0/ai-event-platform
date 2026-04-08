@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MaxLength, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength, IsNumber } from 'class-validator';
 import { PRODUCT_CONSTANTS } from '../product.constants';
 
 export class CreateProductDto {
@@ -15,7 +15,8 @@ export class CreateProductDto {
   @IsNumber()
   price!: number;
 
+  // Injected from JWT by the controller; not required in request body
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: PRODUCT_CONSTANTS.ERRORS.INVALID_ORG_ID })
-  organizationId!: string;
+  organizationId?: string;
 }
