@@ -1,10 +1,23 @@
+import { useEffect } from 'react';
+
 type ToastProps = {
   message?: string | null;
   type?: 'success' | 'error';
   onClose?: () => void;
+  autoDismiss?: boolean;
+  duration?: number;
 };
 
-export function Toast({ message, type = 'success', onClose }: ToastProps) {
+export function Toast({ message, type = 'success', onClose, autoDismiss = true, duration = 3000 }: ToastProps) {
+  useEffect(() => {
+    if (message && autoDismiss && onClose) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, duration);
+      return () => clearTimeout(timer);
+    }
+  }, [message, autoDismiss, onClose, duration]);
+
   if (!message) return null;
 
   return (

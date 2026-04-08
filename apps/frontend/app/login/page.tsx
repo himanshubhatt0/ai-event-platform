@@ -15,19 +15,11 @@ export default function LoginPage() {
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const dispatch = useDispatch();
   const router = useRouter();
-  const { loading, error } = useSelector((state: any) => state.auth);
+  const { loading, error, success } = useSelector((state: any) => state.auth);
 
   useEffect(() => {
     if (getCookie('auth_token')) {
       router.push('/dashboard');
-    }
-
-    const toast = sessionStorage.getItem('toast_message');
-    if (toast) {
-      const payload = JSON.parse(toast);
-      setToastType(payload.type);
-      setToastMessage(payload.message);
-      sessionStorage.removeItem('toast_message');
     }
   }, [router]);
 
@@ -38,15 +30,20 @@ export default function LoginPage() {
     }
   }, [error]);
 
+  useEffect(() => {
+    if (success) {
+      setToastType('success');
+      setToastMessage(success);
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 3000);
+    }
+  }, [success, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await dispatch(loginUser({ email, password })).unwrap();
-      sessionStorage.setItem(
-        'toast_message',
-        JSON.stringify({ type: 'success', message: 'Login successful!' }),
-      );
-      router.push('/dashboard');
     } catch (err: any) {
       setToastType('error');
       setToastMessage(err?.message || 'Login failed.');

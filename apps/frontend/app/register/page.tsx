@@ -16,7 +16,7 @@ export default function RegisterPage() {
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const dispatch = useDispatch();
   const router = useRouter();
-  const { loading, error } = useSelector((state: any) => state.auth);
+  const { loading, error, success } = useSelector((state: any) => state.auth);
 
   useEffect(() => {
     if (getCookie('auth_token')) {
@@ -31,16 +31,21 @@ export default function RegisterPage() {
     }
   }, [error]);
 
+  useEffect(() => {
+    if (success) {
+      setToastType('success');
+      setToastMessage(success);
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
+    }
+  }, [success, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       await dispatch(registerUser({ email, password, name })).unwrap();
-      sessionStorage.setItem(
-        'toast_message',
-        JSON.stringify({ type: 'success', message: 'Registration successful! Please log in.' }),
-      );
-      router.push('/login');
     } catch (err: any) {
       setToastType('error');
       setToastMessage(err?.message || 'Registration failed.');

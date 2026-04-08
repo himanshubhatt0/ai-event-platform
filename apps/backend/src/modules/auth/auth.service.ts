@@ -63,9 +63,12 @@ export class AuthService {
       });
 
       return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+        message: AUTH_CONSTANTS.SUCCESS.REGISTRATION_SUCCESSFUL,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
       };
     } catch (error: unknown) {
       // If already a NestJS exception → rethrow
@@ -111,6 +114,7 @@ export class AuthService {
 
       return {
         access_token: token,
+        message: AUTH_CONSTANTS.SUCCESS.LOGIN_SUCCESSFUL,
       };
     } catch (error) {
       if (error instanceof Error) {
