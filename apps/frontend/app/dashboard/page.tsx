@@ -1,7 +1,6 @@
 'use client';
 
-import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '@/redux/slices/authSlice';
+import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -9,8 +8,7 @@ import { getCookie } from '@/utils/cookies';
 import { Toast } from '@/components/Toast';
 
 export default function DashboardPage() {
-  const { user, token } = useSelector((state: any) => state.auth);
-  const dispatch = useDispatch();
+  const { token } = useSelector((state: any) => state.auth);
   const router = useRouter();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
@@ -31,11 +29,6 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, router]);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.push('/login');
-  };
-
   if (!isAuthenticated) {
     return null;
   }
@@ -43,22 +36,6 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">AI Event Platform</h1>
-              <p className="text-sm text-gray-600">Welcome back, {user?.name || user?.email}!</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-150 ease-in-out"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="bg-white overflow-hidden shadow rounded-lg mb-6">
@@ -97,7 +74,7 @@ export default function DashboardPage() {
                   href="/organization"
                   className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
                 >
-                  <div className="flex-shrink-0 h-10 w-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="shrink-0 h-10 w-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
                     📋
                   </div>
                   <div className="ml-4">
@@ -106,7 +83,7 @@ export default function DashboardPage() {
                   </div>
                 </Link>
                 <div className="flex items-center p-4 border border-gray-200 rounded-lg bg-gray-50">
-                  <div className="flex-shrink-0 h-10 w-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                  <div className="shrink-0 h-10 w-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
                     🎯
                   </div>
                   <div className="ml-4">

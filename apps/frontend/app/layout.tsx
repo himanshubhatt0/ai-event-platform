@@ -1,5 +1,6 @@
 import { ReduxProvider } from '@/redux/provider';
 import AuthInitializer from './AuthInitializer';
+import AppHeader from '@/components/AppHeader';
 import '@/app/globals.css';
 
 export default function RootLayout({
@@ -11,7 +12,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ReduxProvider>
-          <AuthInitializer>{children}</AuthInitializer>
+          <AuthInitializer>
+            <AppHeader />
+            {children}
+          </AuthInitializer>
         </ReduxProvider>
       </body>
     </html>
