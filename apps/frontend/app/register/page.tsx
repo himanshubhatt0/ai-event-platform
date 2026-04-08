@@ -48,6 +48,7 @@ export default function RegisterPage() {
     try {
       await dispatch(registerUser({ email, password, name })).unwrap();
     } catch (err: any) {
+      console.error('Registration error:', err);
       setToastType('error');
       setToastMessage(err?.message || 'Registration failed.');
     }
