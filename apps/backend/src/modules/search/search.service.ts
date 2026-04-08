@@ -89,7 +89,9 @@ export class SearchService {
 
       // ✅ 6. Preserve Pinecone ranking order
       const results = matches
-        .map((match) => {
+        .filter((match:any) => match.score && match.score > 0.5)
+        .slice(0, 5)
+        .map((match:any) => {
           const type = match.metadata?.type;
 
           if (type === 'event') {
