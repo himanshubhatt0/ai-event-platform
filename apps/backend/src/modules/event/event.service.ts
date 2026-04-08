@@ -192,4 +192,38 @@ export class EventService {
       );
     }
   }
+
+  async deleteEvent(eventId: string): Promise<Event> {
+    if (!eventId?.trim()) {
+      throw new BadRequestException(EVENT_CONSTANTS.ERRORS.INVALID_ORG_ID);
+    }
+
+    try {
+      const existingEvent = await this.prisma.event.findUnique({
+        where: { id: eventId.trim() },
+      });
+
+      if (!existingEvent) {
+        throw new NotFoundException(EVENT_CONSTANTS.ERRORS.ORGANIZATION_NOT_FOUND);
+      }
+
+      await this.prisma.interaction.deleteMany({
+        where: { eventId: eventId.trim() },
+      });
+
+      return await this.prisma.event.delete({
+        where: { id: eventId.trim() },
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException) throw error;
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new BadRequestException(EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED);
+      }
+
+      throw new InternalServerErrorException(
+        EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED,
+      );
+    }
+  }
 }

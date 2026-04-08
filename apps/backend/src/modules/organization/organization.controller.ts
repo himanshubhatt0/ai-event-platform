@@ -7,10 +7,13 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { OrganizationService } from './organization.service';
 import { CreateOrgDto } from './dto/create-org.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('organization')
 export class OrganizationController {
   constructor(private orgService: OrganizationService) {}

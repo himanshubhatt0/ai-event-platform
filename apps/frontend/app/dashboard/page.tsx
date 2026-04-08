@@ -53,14 +53,18 @@ export default function DashboardPage() {
                     <p className="text-blue-700">Manage organizations and their events/products</p>
                   </div>
                 </Link>
-                <div className="bg-green-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-medium text-green-900 mb-2">Interactions</h3>
-                  <p className="text-green-700">Track your engagement and feedback</p>
-                </div>
-                <div className="bg-purple-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-medium text-purple-900 mb-2">Profile</h3>
-                  <p className="text-purple-700">Manage your profile and settings</p>
-                </div>
+                <Link href="/feed">
+                  <div className="bg-green-50 p-6 rounded-lg hover:shadow-lg transition cursor-pointer">
+                    <h3 className="text-lg font-medium text-green-900 mb-2">Feed</h3>
+                    <p className="text-green-700">Browse mixed events and products</p>
+                  </div>
+                </Link>
+                <Link href="/search">
+                  <div className="bg-purple-50 p-6 rounded-lg hover:shadow-lg transition cursor-pointer">
+                    <h3 className="text-lg font-medium text-purple-900 mb-2">Search</h3>
+                    <p className="text-purple-700">Natural language semantic search</p>
+                  </div>
+                </Link>
               </div>
             </div>
           </div>
@@ -69,7 +73,7 @@ export default function DashboardPage() {
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Links</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
                   href="/organization"
                   className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
@@ -82,15 +86,30 @@ export default function DashboardPage() {
                     <p className="text-xs text-gray-500">Create, view, and manage organizations</p>
                   </div>
                 </Link>
-                <div className="flex items-center p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <Link
+                  href="/feed"
+                  className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                >
                   <div className="shrink-0 h-10 w-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
                     🎯
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-900">Explore Events</p>
-                    <p className="text-xs text-gray-500">Coming soon</p>
+                    <p className="text-sm font-medium text-gray-900">Open Feed</p>
+                    <p className="text-xs text-gray-500">Explore events and products</p>
                   </div>
-                </div>
+                </Link>
+                <Link
+                  href="/search"
+                  className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                >
+                  <div className="shrink-0 h-10 w-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                    🔎
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-900">Semantic Search</p>
+                    <p className="text-xs text-gray-500">Find relevant items by intent</p>
+                  </div>
+                </Link>
               </div>
             </div>
           </div>

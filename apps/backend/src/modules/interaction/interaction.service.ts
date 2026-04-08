@@ -3,7 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { Prisma, Interaction } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { CreateInteractionDto } from './dto/create-interaction.dto';
 import { INTERACTION_CONSTANTS } from './interaction.constants';
@@ -12,8 +12,8 @@ import { INTERACTION_CONSTANTS } from './interaction.constants';
 export class InteractionService {
   constructor(private prisma: PrismaService) {}
 
-  async interact(data: CreateInteractionDto): Promise<Interaction> {
-    const { userId, type, eventId, productId } = data;
+  async interact(userId: string, data: CreateInteractionDto) {
+    const { type, eventId, productId } = data;
 
     if (!userId) {
       throw new BadRequestException(INTERACTION_CONSTANTS.ERRORS.USER_REQUIRED);
@@ -40,10 +40,13 @@ export class InteractionService {
           where: { id: existing.id },
         });
 
-        return existing;
+        return {
+          toggledOn: false,
+          interaction: existing,
+        };
       }
 
-      return await this.prisma.interaction.create({
+      const created = await this.prisma.interaction.create({
         data: {
           userId,
           type,
@@ -51,6 +54,11 @@ export class InteractionService {
           productId,
         },
       });
+
+      return {
+        toggledOn: true,
+        interaction: created,
+      };
     } catch (error: unknown) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new BadRequestException(

@@ -193,4 +193,38 @@ export class ProductService {
       );
     }
   }
+
+  async deleteProduct(productId: string): Promise<Product> {
+    if (!productId?.trim()) {
+      throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.INVALID_ORG_ID);
+    }
+
+    try {
+      const existingProduct = await this.prisma.product.findUnique({
+        where: { id: productId.trim() },
+      });
+
+      if (!existingProduct) {
+        throw new NotFoundException(PRODUCT_CONSTANTS.ERRORS.ORGANIZATION_NOT_FOUND);
+      }
+
+      await this.prisma.interaction.deleteMany({
+        where: { productId: productId.trim() },
+      });
+
+      return await this.prisma.product.delete({
+        where: { id: productId.trim() },
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException) throw error;
+
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new BadRequestException(PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED);
+      }
+
+      throw new InternalServerErrorException(
+        PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED,
+      );
+    }
+  }
 }

@@ -120,6 +120,23 @@ export default function ProductsManagementPage() {
     setFormData({ title: '', description: '', price: '' });
   };
 
+  const handleDelete = async (productId: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) {
+      return;
+    }
+
+    try {
+      await organizationService.deleteProduct(productId);
+      setProducts(products.filter((p) => p.id !== productId));
+      setToastType('success');
+      setToastMessage('Product deleted successfully');
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || 'Failed to delete product';
+      setToastType('error');
+      setToastMessage(errorMessage);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -242,9 +259,15 @@ export default function ProductsManagementPage() {
                 <div className="flex gap-3 pt-4 border-t">
                   <button
                     onClick={() => handleEdit(product)}
-                    className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition text-sm"
+                    className="w-1/2 px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition text-sm"
                   >
                     Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(product.id)}
+                    className="w-1/2 px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition text-sm"
+                  >
+                    Delete
                   </button>
                 </div>
               </div>

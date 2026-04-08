@@ -112,6 +112,11 @@ export const organizationService = {
     return response.data;
   },
 
+  deleteEvent: async (eventId: string): Promise<Event> => {
+    const response = await api.delete(`/event/${eventId}`);
+    return response.data;
+  },
+
   // Products
   getOrgProducts: async (orgId: string): Promise<Product[]> => {
     const response = await api.get(`/organization/${orgId}/products`);
@@ -142,6 +147,11 @@ export const organizationService = {
     }>,
   ): Promise<Product> => {
     const response = await api.put(`/product/${productId}`, data);
+    return response.data;
+  },
+
+  deleteProduct: async (productId: string): Promise<Product> => {
+    const response = await api.delete(`/product/${productId}`);
     return response.data;
   },
 };

@@ -1,16 +1,20 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('event')
 export class EventController {
   constructor(private eventService: EventService) {}
@@ -39,5 +43,10 @@ export class EventController {
     @Body() body: Partial<CreateEventDto>,
   ) {
     return this.eventService.updateEvent(eventId, body);
+  }
+
+  @Delete(':eventId')
+  delete(@Param('eventId', new ParseUUIDPipe()) eventId: string) {
+    return this.eventService.deleteEvent(eventId);
   }
 }

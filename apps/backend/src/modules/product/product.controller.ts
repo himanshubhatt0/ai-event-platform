@@ -1,16 +1,20 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('product')
 export class ProductController {
   constructor(private productService: ProductService) {}
@@ -39,5 +43,10 @@ export class ProductController {
     @Body() body: Partial<CreateProductDto>,
   ) {
     return this.productService.updateProduct(productId, body);
+  }
+
+  @Delete(':productId')
+  delete(@Param('productId', new ParseUUIDPipe()) productId: string) {
+    return this.productService.deleteProduct(productId);
   }
 }

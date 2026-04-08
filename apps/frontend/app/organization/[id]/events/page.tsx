@@ -107,6 +107,23 @@ export default function EventsManagementPage() {
     setFormData({ title: '', description: '', date: '' });
   };
 
+  const handleDelete = async (eventId: string) => {
+    if (!confirm('Are you sure you want to delete this event?')) {
+      return;
+    }
+
+    try {
+      await organizationService.deleteEvent(eventId);
+      setEvents(events.filter((e) => e.id !== eventId));
+      setToastType('success');
+      setToastMessage('Event deleted successfully');
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || 'Failed to delete event';
+      setToastType('error');
+      setToastMessage(errorMessage);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -230,9 +247,15 @@ export default function EventsManagementPage() {
                 <div className="flex gap-3 pt-4 border-t">
                   <button
                     onClick={() => handleEdit(event)}
-                    className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition"
+                    className="w-1/2 px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition"
                   >
                     Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(event.id)}
+                    className="w-1/2 px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition"
+                  >
+                    Delete
                   </button>
                 </div>
               </div>

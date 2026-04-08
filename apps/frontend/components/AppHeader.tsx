@@ -29,6 +29,18 @@ function getBreadcrumbs(pathname: string): Breadcrumb[] {
     return [{ label: 'Dashboard' }];
   }
 
+  if (segments[0] === 'dashboard') {
+    return [{ label: 'Dashboard' }];
+  }
+
+  if (segments[0] === 'feed') {
+    return [{ label: 'Feed' }];
+  }
+
+  if (segments[0] === 'search') {
+    return [{ label: 'Search' }];
+  }
+
   if (segments[0] === 'organization') {
     if (segments.length === 1) {
       return [{ label: 'Organization' }];
@@ -97,6 +109,18 @@ export default function AppHeader() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/feed"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition"
+            >
+              Feed
+            </Link>
+            <Link
+              href="/search"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition"
+            >
+              Search
+            </Link>
             <Link
               href="/organization"
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition"

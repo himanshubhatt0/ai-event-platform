@@ -1,18 +1,15 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { InteractionType } from '@prisma/client';
 
 export class CreateInteractionDto {
-  @IsString()
-  userId!: string;
-
   @IsEnum(InteractionType)
   type!: InteractionType;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
   eventId?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
   productId?: string;
 }

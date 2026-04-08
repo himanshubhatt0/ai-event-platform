@@ -1,12 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Request, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FeedService } from './feed.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('feed')
 export class FeedController {
   constructor(private feedService: FeedService) {}
 
   @Get()
-  getFeed() {
-    return this.feedService.getFeed();
+  getFeed(@Request() req: any) {
+    return this.feedService.getFeed(req.user.id);
   }
 }
