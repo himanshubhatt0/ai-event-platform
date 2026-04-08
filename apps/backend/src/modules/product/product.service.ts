@@ -30,7 +30,12 @@ export class ProductService {
         );
       }
 
-      // ✅ 2. Create Product in DB (SOURCE OF TRUTH)
+      // ✅ 2. Generate Embedding (AI)
+      const embedding = await getEmbedding(
+        `${title.trim()} ${description.trim()}`,
+      );
+
+      // ✅ 3. Create Product in DB (SOURCE OF TRUTH)
       const product = await this.prisma.product.create({
         data: {
           title: title.trim(),
@@ -39,11 +44,6 @@ export class ProductService {
           organizationId,
         },
       });
-
-      // ✅ 3. Generate Embedding (AI)
-      const embedding = await getEmbedding(
-        `${title.trim()} ${description.trim()}`,
-      );
 
       // ✅ 4. Store in Pinecone (VECTOR DB)
       try {
@@ -61,9 +61,21 @@ export class ProductService {
             },
           ],
         });
-      } catch (err) {
-        // ⚠️ DO NOT FAIL API (production-safe)
-        console.error('Pinecone upsert failed for product:', err);
+      } catch (upsertError) {
+        console.error('Pinecone upsert failed for product:', upsertError);
+
+        try {
+          await this.prisma.product.delete({ where: { id: product.id } });
+        } catch (rollbackError) {
+          console.error(
+            'Failed to rollback product after Pinecone failure:',
+            rollbackError,
+          );
+        }
+
+        throw new InternalServerErrorException(
+          PRODUCT_CONSTANTS.ERRORS.PRODUCT_CREATION_FAILED,
+        );
       }
 
       return product;

@@ -30,7 +30,12 @@ export class EventService {
         );
       }
 
-      // ✅ 2. Create Event in DB (SOURCE OF TRUTH)
+      // ✅ 2. Generate Embedding (AI)
+      const embedding = await getEmbedding(
+        `${title.trim()} ${description.trim()}`,
+      );
+
+      // ✅ 3. Create Event in DB (SOURCE OF TRUTH)
       const event = await this.prisma.event.create({
         data: {
           title: title.trim(),
@@ -40,25 +45,37 @@ export class EventService {
         },
       });
 
-      // ✅ 3. Generate Embedding (AI)
-      const embedding = await getEmbedding(
-        `${title.trim()} ${description.trim()}`,
-      );
-
       // ✅ 4. Store in Pinecone (VECTOR DB)
-      await index.upsert({
-        records: [
-          {
-            id: event.id,
-            values: embedding,
-            metadata: {
-              type: 'event',
-              title: title.trim(),
-              description: description.trim(),
+      try {
+        await index.upsert({
+          records: [
+            {
+              id: event.id,
+              values: embedding,
+              metadata: {
+                type: 'event',
+                title: title.trim(),
+                description: description.trim(),
+              },
             },
-          },
-        ],
-      });
+          ],
+        });
+      } catch (upsertError) {
+        console.error('Pinecone upsert failed for event:', upsertError);
+
+        try {
+          await this.prisma.event.delete({ where: { id: event.id } });
+        } catch (rollbackError) {
+          console.error(
+            'Failed to rollback event after Pinecone failure:',
+            rollbackError,
+          );
+        }
+
+        throw new InternalServerErrorException(
+          EVENT_CONSTANTS.ERRORS.EVENT_CREATION_FAILED,
+        );
+      }
 
       return event;
     } catch (error: unknown) {
