@@ -22,14 +22,30 @@ export class SearchService {
 
     try {
       // ✅ 1. Generate embedding for query
-      const embedding = await getEmbedding(query.trim());
+      let embedding: number[];
+      try {
+        embedding = await getEmbedding(query.trim());
+      } catch (error: unknown) {
+        console.error('SearchService OpenAI embedding failed:', error);
+        throw new InternalServerErrorException(
+          SEARCH_CONSTANTS.ERRORS.SEARCH_FAILED,
+        );
+      }
 
       // ✅ 2. Query Pinecone (vector similarity)
-      const pineconeResult = await index.query({
-        vector: embedding,
-        topK: 10,
-        includeMetadata: true,
-      });
+      let pineconeResult;
+      try {
+        pineconeResult = await index.query({
+          vector: embedding,
+          topK: 10,
+          includeMetadata: true,
+        });
+      } catch (error: unknown) {
+        console.error('SearchService Pinecone query failed:', error);
+        throw new InternalServerErrorException(
+          SEARCH_CONSTANTS.ERRORS.SEARCH_FAILED,
+        );
+      }
 
       const matches = pineconeResult.matches || [];
 
