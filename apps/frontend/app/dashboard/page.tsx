@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { getCookie } from '@/utils/cookies';
-import { Toast } from '@/components/Toast';
 
 export default function DashboardPage() {
   const { token, user } = useSelector((state: any) => state.auth);
