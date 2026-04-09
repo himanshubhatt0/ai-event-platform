@@ -7,7 +7,6 @@ import { getCookie } from '@/utils/cookies';
 import { organizationService, Product, Organization } from '@/services/organization.service';
 import Link from 'next/link';
 import { Toast } from '@/components/Toast';
-import { PopupModal } from '@/components/PopupModal';
 import { extractApiErrorMessage } from '@/utils/apiError';
 
 export default function ProductsManagementPage() {
@@ -20,9 +19,7 @@ export default function ProductsManagementPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
@@ -120,26 +117,6 @@ export default function ProductsManagementPage() {
     setFormData({ title: '', description: '', price: '' });
   };
 
-  const handleDelete = async (productId: string) => {
-    if (isDeletingId) {
-      return;
-    }
-
-    try {
-      setIsDeletingId(productId);
-      await organizationService.deleteProduct(productId);
-      setProducts((prev) => prev.filter((product) => product.id !== productId));
-      setToastType('success');
-      setToastMessage('Product deleted successfully');
-      setPendingDeleteId(null);
-    } catch (err: any) {
-      setToastType('error');
-      setToastMessage(extractApiErrorMessage(err, 'Failed to delete product'));
-    } finally {
-      setIsDeletingId(null);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -151,28 +128,6 @@ export default function ProductsManagementPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
-      <PopupModal
-        isOpen={Boolean(pendingDeleteId)}
-        title="Delete product?"
-        description="This action cannot be undone."
-        actions={[
-          {
-            label: 'Cancel',
-            variant: 'secondary',
-            onClick: () => setPendingDeleteId(null),
-          },
-          {
-            label: isDeletingId ? 'Deleting...' : 'Delete',
-            variant: 'danger',
-            disabled: Boolean(isDeletingId),
-            onClick: () => {
-              if (pendingDeleteId) {
-                handleDelete(pendingDeleteId);
-              }
-            },
-          },
-        ]}
-      />
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -280,15 +235,7 @@ export default function ProductsManagementPage() {
                   Created: {new Date(product.createdAt).toLocaleDateString()}
                 </p>
 
-                <div className="pt-4 border-t">
-                  <button
-                    onClick={() => setPendingDeleteId(product.id)}
-                    disabled={Boolean(isDeletingId)}
-                    className="w-full px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition text-sm"
-                  >
-                    {isDeletingId === product.id ? 'Deleting...' : 'Delete'}
-                  </button>
-                </div>
+                <div className="pt-4 border-t" />
               </div>
             ))}
           </div>

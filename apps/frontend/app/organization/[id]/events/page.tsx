@@ -7,7 +7,6 @@ import { getCookie } from '@/utils/cookies';
 import { organizationService, Event, Organization } from '@/services/organization.service';
 import Link from 'next/link';
 import { Toast } from '@/components/Toast';
-import { PopupModal } from '@/components/PopupModal';
 import { extractApiErrorMessage } from '@/utils/apiError';
 
 export default function EventsManagementPage() {
@@ -20,9 +19,7 @@ export default function EventsManagementPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
@@ -111,26 +108,6 @@ export default function EventsManagementPage() {
     setFormData({ title: '', description: '', date: '' });
   };
 
-  const handleDelete = async (eventId: string) => {
-    if (isDeletingId) {
-      return;
-    }
-
-    try {
-      setIsDeletingId(eventId);
-      await organizationService.deleteEvent(eventId);
-      setEvents((prev) => prev.filter((event) => event.id !== eventId));
-      setToastType('success');
-      setToastMessage('Event deleted successfully');
-      setPendingDeleteId(null);
-    } catch (err: any) {
-      setToastType('error');
-      setToastMessage(extractApiErrorMessage(err, 'Failed to delete event'));
-    } finally {
-      setIsDeletingId(null);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -142,28 +119,6 @@ export default function EventsManagementPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
-      <PopupModal
-        isOpen={Boolean(pendingDeleteId)}
-        title="Delete event?"
-        description="This action cannot be undone."
-        actions={[
-          {
-            label: 'Cancel',
-            variant: 'secondary',
-            onClick: () => setPendingDeleteId(null),
-          },
-          {
-            label: isDeletingId ? 'Deleting...' : 'Delete',
-            variant: 'danger',
-            disabled: Boolean(isDeletingId),
-            onClick: () => {
-              if (pendingDeleteId) {
-                handleDelete(pendingDeleteId);
-              }
-            },
-          },
-        ]}
-      />
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -272,15 +227,7 @@ export default function EventsManagementPage() {
                   </p>
                 )}
 
-                <div className="pt-4 border-t">
-                  <button
-                    onClick={() => setPendingDeleteId(event.id)}
-                    disabled={Boolean(isDeletingId)}
-                    className="w-full px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition"
-                  >
-                    {isDeletingId === event.id ? 'Deleting...' : 'Delete'}
-                  </button>
-                </div>
+                <div className="pt-4 border-t" />
               </div>
             ))}
           </div>
