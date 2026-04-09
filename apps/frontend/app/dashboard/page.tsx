@@ -10,8 +10,6 @@ import { Toast } from '@/components/Toast';
 export default function DashboardPage() {
   const { token, user } = useSelector((state: any) => state.auth);
   const router = useRouter();
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const isHydrated = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -34,7 +32,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {/* Welcome */}
