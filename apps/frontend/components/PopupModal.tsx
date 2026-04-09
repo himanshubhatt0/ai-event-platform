@@ -50,7 +50,7 @@ export function PopupModal({ isOpen, title, description, children, actions }: Po
                 type="button"
                 onClick={action.onClick}
                 disabled={action.disabled}
-                className={`rounded-md px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${actionClassByVariant[variant]}`}
+                className={`rounded-md px-4 cursor-pointer py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${actionClassByVariant[variant]}`}
               >
                 {action.label}
               </button>
