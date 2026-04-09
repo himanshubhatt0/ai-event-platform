@@ -9,6 +9,42 @@ import Link from 'next/link';
 import { Toast } from '@/components/Toast';
 import { extractApiErrorMessage } from '@/utils/apiError';
 
+type ProductsPageData = {
+  orgData: Organization;
+  productsData: Product[];
+};
+
+const pageDataCache = new Map<string, ProductsPageData>();
+const pageDataInFlight = new Map<string, Promise<ProductsPageData>>();
+
+async function getProductsPageData(orgId: string): Promise<ProductsPageData> {
+  const cached = pageDataCache.get(orgId);
+  if (cached) {
+    return cached;
+  }
+
+  const existingRequest = pageDataInFlight.get(orgId);
+  if (existingRequest) {
+    return existingRequest;
+  }
+
+  const request = Promise.all([
+    organizationService.getOrganizationById(orgId),
+    organizationService.getOrgProducts(orgId),
+  ])
+    .then(([orgData, productsData]) => {
+      const data = { orgData, productsData };
+      pageDataCache.set(orgId, data);
+      return data;
+    })
+    .finally(() => {
+      pageDataInFlight.delete(orgId);
+    });
+
+  pageDataInFlight.set(orgId, request);
+  return request;
+}
+
 export default function ProductsManagementPage() {
   const router = useRouter();
   const params = useParams();
@@ -56,10 +92,7 @@ export default function ProductsManagementPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [orgData, productsData] = await Promise.all([
-        organizationService.getOrganizationById(orgId),
-        organizationService.getOrgProducts(orgId),
-      ]);
+      const { orgData, productsData } = await getProductsPageData(orgId);
       setOrganization(orgData);
       setProducts(productsData);
     } catch (err: any) {
@@ -98,7 +131,19 @@ export default function ProductsManagementPage() {
         price,
         organizationId: orgId,
       });
-      setProducts((prev) => [newProduct, ...prev]);
+      setProducts((prev) => {
+        const nextProducts = [newProduct, ...prev];
+
+        const cached = pageDataCache.get(orgId);
+        if (cached) {
+          pageDataCache.set(orgId, {
+            ...cached,
+            productsData: nextProducts,
+          });
+        }
+
+        return nextProducts;
+      });
       setToastType('success');
       setToastMessage('Product created successfully');
 
@@ -133,8 +178,8 @@ export default function ProductsManagementPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <Link href="/organization" className="text-indigo-600 hover:text-indigo-700 font-medium mb-2 inline-block">
-              ← Back to Organizations
+            <Link href="/dashboard" className="text-indigo-600 hover:text-indigo-700 font-medium mb-2 inline-block">
+              ← Back to Dashboard
             </Link>
             <h1 className="text-4xl font-bold text-gray-900">Products - {organization?.name}</h1>
             <p className="mt-2 text-gray-600">Create and manage products for this organization</p>
@@ -196,7 +241,7 @@ export default function ProductsManagementPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 cursor-pointer px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+                  className={`flex-1 cursor-pointer px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {isSubmitting ? 'Saving...' : 'Create Product'}
                 </button>
