@@ -110,7 +110,7 @@ export class AuthService {
         );
       }
 
-      const token = this.jwtService.sign({ userId: user.id });
+      const token = this.createAccessToken(user.id, user.organizationId);
 
       return {
         access_token: token,
@@ -123,6 +123,13 @@ export class AuthService {
 
       throw new BadRequestException(AUTH_CONSTANTS.ERRORS.LOGIN_FAILED);
     }
+  }
+
+  createAccessToken(userId: string, organizationId?: string | null): string {
+    return this.jwtService.sign({
+      userId,
+      organizationId: organizationId ?? null,
+    });
   }
 
   private isValidEmail(email: string): boolean {

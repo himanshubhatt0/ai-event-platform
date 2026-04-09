@@ -2,10 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '@/redux/slices/authSlice';
-import { getCookie } from '@/utils/cookies';
+import { logout, setToken, setUser } from '@/redux/slices/authSlice';
+import { getCookie, setCookie } from '@/utils/cookies';
 import { RootState } from '@/redux/store';
+import { organizationService } from '@/services/organization.service';
+import type { AxiosError } from 'axios';
 
 const HIDDEN_ROUTES = new Set(['/login', '/register']);
 
@@ -73,6 +76,7 @@ export default function AppHeader() {
   const authToken = getCookie('auth_token');
   const isAuthenticated = Boolean(token || authToken);
   const breadcrumbs = getBreadcrumbs(pathname);
+  const [isCreatingOrganization, setIsCreatingOrganization] = useState(false);
 
   if (HIDDEN_ROUTES.has(pathname) || !isAuthenticated) {
     return null;
@@ -81,6 +85,36 @@ export default function AppHeader() {
   const handleLogout = () => {
     dispatch(logout());
     router.push('/login');
+  };
+
+  const handleCreateOrganization = async () => {
+    if (!user || isCreatingOrganization) {
+      return;
+    }
+
+    const name = window.prompt('Enter your organization name');
+    if (!name || !name.trim()) {
+      return;
+    }
+
+    try {
+      setIsCreatingOrganization(true);
+      const response = await organizationService.createMyOrganization(name.trim());
+
+      setCookie('auth_token', response.access_token, 1);
+      dispatch(setToken(response.access_token));
+      dispatch(setUser(response.user));
+      router.push(`/organization/${response.user.organizationId}/events`);
+    } catch (error) {
+      const fallback = 'Failed to create organization. Please try again.';
+      const message =
+        (error as AxiosError<{ message?: string }>).response?.data?.message ||
+        (error as Error).message ||
+        fallback;
+      window.alert(message);
+    } finally {
+      setIsCreatingOrganization(false);
+    }
   };
 
   return (
@@ -128,6 +162,15 @@ export default function AppHeader() {
               >
                 My Organization
               </Link>
+            )}
+            {!user?.organizationId && (
+              <button
+                onClick={handleCreateOrganization}
+                disabled={isCreatingOrganization}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isCreatingOrganization ? 'Creating...' : 'Create Organization'}
+              </button>
             )}
             <button
               onClick={handleLogout}

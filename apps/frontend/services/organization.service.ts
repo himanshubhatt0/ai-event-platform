@@ -35,6 +35,13 @@ export interface Product {
   createdAt: string;
 }
 
+export interface CreateMyOrganizationResponse {
+  access_token: string;
+  message: string;
+  user: User;
+  organization: Organization;
+}
+
 // Organization APIs
 export const organizationService = {
   // Organizations
@@ -50,6 +57,11 @@ export const organizationService = {
 
   createOrganization: async (name: string): Promise<Organization> => {
     const response = await api.post('/organization', { name });
+    return response.data;
+  },
+
+  createMyOrganization: async (name: string): Promise<CreateMyOrganizationResponse> => {
+    const response = await api.post('/organization/mine', { name });
     return response.data;
   },
 

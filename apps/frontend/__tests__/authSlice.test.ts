@@ -6,9 +6,12 @@ import { api } from '@/services/api';
 // Mock the API
 jest.mock('@/services/api');
 const mockedApi = api as jest.Mocked<typeof api>;
+type AuthSliceState = ReturnType<typeof authReducer>;
 
 describe('authSlice', () => {
   let store: ReturnType<typeof configureStore>;
+
+  const getAuthState = () => (store.getState() as { auth: AuthSliceState }).auth;
 
   beforeEach(() => {
     store = configureStore({
@@ -17,7 +20,6 @@ describe('authSlice', () => {
       },
     });
     jest.clearAllMocks();
-    localStorage.clear();
   });
 
   describe('loginUser', () => {
@@ -31,12 +33,11 @@ describe('authSlice', () => {
 
       await (store.dispatch as AppDispatch)(loginUser({ email: 'test@example.com', password: 'password' }));
 
-      const state = store.getState().auth;
+      const state = getAuthState();
       expect(state.user).toEqual(mockUser);
       expect(state.token).toBe(mockToken);
       expect(state.loading).toBe(false);
       expect(state.error).toBe(null);
-      expect(localStorage.getItem('token')).toBe(mockToken);
     });
 
     it('should handle login failure', async () => {
@@ -45,7 +46,7 @@ describe('authSlice', () => {
 
       await (store.dispatch as AppDispatch)(loginUser({ email: 'test@example.com', password: 'wrongpassword' }));
 
-      const state = store.getState().auth;
+      const state = getAuthState();
       expect(state.user).toBe(null);
       expect(state.token).toBe(null);
       expect(state.loading).toBe(false);
@@ -62,7 +63,7 @@ describe('authSlice', () => {
 
       await (store.dispatch as AppDispatch)(registerUser({ email: 'test@example.com', password: 'password', name: 'Test User' }));
 
-      const state = store.getState().auth;
+      const state = getAuthState();
       expect(state.user).toBe(null);
       expect(state.token).toBe(null);
       expect(state.loading).toBe(false);
@@ -75,7 +76,7 @@ describe('authSlice', () => {
 
       await (store.dispatch as AppDispatch)(registerUser({ email: 'existing@example.com', password: 'password', name: 'Test User' }));
 
-      const state = store.getState().auth;
+      const state = getAuthState();
       expect(state.user).toBe(null);
       expect(state.token).toBe(null);
       expect(state.loading).toBe(false);
@@ -90,14 +91,12 @@ describe('authSlice', () => {
         type: 'auth/loginUser/fulfilled',
         payload: { user: { id: '1', email: 'test@example.com' }, access_token: 'token' }
       });
-      localStorage.setItem('token', 'token');
 
       store.dispatch(logout());
 
-      const state = store.getState().auth;
+      const state = getAuthState();
       expect(state.user).toBe(null);
       expect(state.token).toBe(null);
-      expect(localStorage.getItem('token')).toBe(null);
     });
   });
 });

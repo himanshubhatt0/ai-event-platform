@@ -23,7 +23,6 @@ export const loginUser = createAsyncThunk(
   async ({ email, password }: { email: string; password: string }) => {
     const response = await loginApi(email, password);
     setCookie('auth_token', response.access_token, 1);
-    localStorage.setItem('token', response.access_token);
     const user = await getMeApi();
     return { access_token: response.access_token, user, message: response.message };
   }
@@ -47,7 +46,6 @@ const authSlice = createSlice({
       state.error = null;
       state.success = null;
       deleteCookie('auth_token');
-      localStorage.removeItem('token');
     },
     setToken(state, action) {
       state.token = action.payload;

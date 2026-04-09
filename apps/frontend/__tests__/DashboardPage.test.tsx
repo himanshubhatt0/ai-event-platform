@@ -47,7 +47,6 @@ const renderWithProviders = (component: React.ReactElement, store = createMockSt
 describe('DashboardPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    localStorage.clear();
   });
 
   it('redirects to login when no token', () => {
@@ -81,7 +80,6 @@ describe('DashboardPage', () => {
   it('handles logout', () => {
     const mockUser = { id: '1', email: 'test@example.com', name: 'Test User' };
     const store = createMockStore({ user: mockUser, token: 'mock-token' });
-    localStorage.setItem('token', 'mock-token');
 
     renderWithProviders(<DashboardPage />, store);
 
@@ -90,7 +88,6 @@ describe('DashboardPage', () => {
 
     expect(store.getState().auth.user).toBe(null);
     expect(store.getState().auth.token).toBe(null);
-    expect(localStorage.getItem('token')).toBe(null);
     expect(mockRouter.push).toHaveBeenCalledWith('/login');
   });
 

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrganizationController } from './organization.controller';
 import { OrganizationService } from './organization.service';
+import { AuthService } from '../auth/auth.service';
 
 describe('OrganizationController', () => {
   let controller: OrganizationController;
@@ -11,11 +12,16 @@ describe('OrganizationController', () => {
     getOrgUsers: jest.fn(),
   };
 
+  const mockAuthService = {
+    createAccessToken: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [OrganizationController],
       providers: [
         { provide: OrganizationService, useValue: mockService },
+        { provide: AuthService, useValue: mockAuthService },
       ],
     }).compile();
 

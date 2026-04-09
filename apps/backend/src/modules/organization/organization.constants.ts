@@ -11,8 +11,13 @@ export const ORGANIZATION_CONSTANTS = {
     ORGANIZATION_NOT_FOUND: 'Organization not found',
     ORGANIZATION_NAME_ALREADY_EXISTS: 'Organization name already exists',
     USER_NOT_FOUND: 'User not found',
+    USER_ALREADY_HAS_ORGANIZATION: 'User already has an organization',
     ASSIGN_USER_FAILED: 'Failed to assign user to organization',
     FETCH_USERS_FAILED: 'Failed to fetch organization users',
     CREATE_ORGANIZATION_FAILED: 'Failed to create organization',
+  },
+
+  SUCCESS: {
+    ORGANIZATION_CREATED: 'Organization created successfully',
   },
 };
