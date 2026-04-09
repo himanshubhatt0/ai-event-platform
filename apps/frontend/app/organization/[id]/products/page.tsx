@@ -22,6 +22,8 @@ export default function ProductsManagementPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
@@ -75,6 +77,10 @@ export default function ProductsManagementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
     if (!formData.title.trim() || !formData.description.trim() || !formData.price) {
       setToastType('error');
       setToastMessage('All fields are required');
@@ -89,6 +95,7 @@ export default function ProductsManagementPage() {
     }
 
     try {
+      setIsSubmitting(true);
       if (editingId) {
         // Update existing product
         const updated = await organizationService.updateProduct(editingId, {
@@ -96,7 +103,7 @@ export default function ProductsManagementPage() {
           description: formData.description,
           price,
         });
-        setProducts(products.map((p) => (p.id === editingId ? updated : p)));
+        setProducts((prev) => prev.map((product) => (product.id === editingId ? updated : product)));
         setToastType('success');
         setToastMessage('Product updated successfully');
       } else {
@@ -107,7 +114,7 @@ export default function ProductsManagementPage() {
           price,
           organizationId: orgId,
         });
-        setProducts([newProduct, ...products]);
+        setProducts((prev) => [newProduct, ...prev]);
         setToastType('success');
         setToastMessage('Product created successfully');
       }
@@ -118,6 +125,8 @@ export default function ProductsManagementPage() {
     } catch (err: any) {
       setToastType('error');
       setToastMessage(extractApiErrorMessage(err, 'Failed to save product'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -138,15 +147,22 @@ export default function ProductsManagementPage() {
   };
 
   const handleDelete = async (productId: string) => {
+    if (isDeletingId) {
+      return;
+    }
+
     try {
+      setIsDeletingId(productId);
       await organizationService.deleteProduct(productId);
-      setProducts(products.filter((p) => p.id !== productId));
+      setProducts((prev) => prev.filter((product) => product.id !== productId));
       setToastType('success');
       setToastMessage('Product deleted successfully');
       setPendingDeleteId(null);
     } catch (err: any) {
       setToastType('error');
       setToastMessage(extractApiErrorMessage(err, 'Failed to delete product'));
+    } finally {
+      setIsDeletingId(null);
     }
   };
 
@@ -172,8 +188,9 @@ export default function ProductsManagementPage() {
             onClick: () => setPendingDeleteId(null),
           },
           {
-            label: 'Delete',
+            label: isDeletingId ? 'Deleting...' : 'Delete',
             variant: 'danger',
+            disabled: Boolean(isDeletingId),
             onClick: () => {
               if (pendingDeleteId) {
                 handleDelete(pendingDeleteId);
@@ -252,13 +269,15 @@ export default function ProductsManagementPage() {
               <div className="flex gap-3">
                 <button
                   type="submit"
+                  disabled={isSubmitting}
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
                 >
-                  {editingId ? 'Update Product' : 'Create Product'}
+                  {isSubmitting ? 'Saving...' : editingId ? 'Update Product' : 'Create Product'}
                 </button>
                 <button
                   type="button"
                   onClick={handleCancel}
+                  disabled={isSubmitting}
                   className="flex-1 px-4 py-2 bg-gray-300 text-gray-900 font-medium rounded-lg hover:bg-gray-400 transition"
                 >
                   Cancel
@@ -293,15 +312,17 @@ export default function ProductsManagementPage() {
                 <div className="flex gap-3 pt-4 border-t">
                   <button
                     onClick={() => handleEdit(product)}
+                    disabled={Boolean(isDeletingId)}
                     className="w-1/2 px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition text-sm"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => setPendingDeleteId(product.id)}
+                    disabled={Boolean(isDeletingId)}
                     className="w-1/2 px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition text-sm"
                   >
-                    Delete
+                    {isDeletingId === product.id ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               </div>

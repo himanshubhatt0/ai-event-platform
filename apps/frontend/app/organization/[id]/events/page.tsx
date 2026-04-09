@@ -22,6 +22,8 @@ export default function EventsManagementPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
@@ -72,8 +74,19 @@ export default function EventsManagementPage() {
     }
   };
 
+  const formatDateTimeLocal = (value: string) => {
+    const date = new Date(value);
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isSubmitting) {
+      return;
+    }
 
     if (!formData.title.trim() || !formData.description.trim() || !formData.date) {
       setToastType('error');
@@ -82,10 +95,11 @@ export default function EventsManagementPage() {
     }
 
     try {
+      setIsSubmitting(true);
       if (editingId) {
         // Update existing event
         const updated = await organizationService.updateEvent(editingId, formData);
-        setEvents(events.map((e) => (e.id === editingId ? updated : e)));
+        setEvents((prev) => prev.map((event) => (event.id === editingId ? updated : event)));
         setToastType('success');
         setToastMessage('Event updated successfully');
       } else {
@@ -94,7 +108,7 @@ export default function EventsManagementPage() {
           ...formData,
           organizationId: orgId,
         });
-        setEvents([newEvent, ...events]);
+        setEvents((prev) => [newEvent, ...prev]);
         setToastType('success');
         setToastMessage('Event created successfully');
       }
@@ -105,6 +119,8 @@ export default function EventsManagementPage() {
     } catch (err: any) {
       setToastType('error');
       setToastMessage(extractApiErrorMessage(err, 'Failed to save event'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -112,7 +128,7 @@ export default function EventsManagementPage() {
     setFormData({
       title: event.title,
       description: event.description,
-      date: event.date.split('T')[0],
+      date: formatDateTimeLocal(event.date),
     });
     setEditingId(event.id);
     setShowCreateForm(true);
@@ -125,15 +141,22 @@ export default function EventsManagementPage() {
   };
 
   const handleDelete = async (eventId: string) => {
+    if (isDeletingId) {
+      return;
+    }
+
     try {
+      setIsDeletingId(eventId);
       await organizationService.deleteEvent(eventId);
-      setEvents(events.filter((e) => e.id !== eventId));
+      setEvents((prev) => prev.filter((event) => event.id !== eventId));
       setToastType('success');
       setToastMessage('Event deleted successfully');
       setPendingDeleteId(null);
     } catch (err: any) {
       setToastType('error');
       setToastMessage(extractApiErrorMessage(err, 'Failed to delete event'));
+    } finally {
+      setIsDeletingId(null);
     }
   };
 
@@ -159,8 +182,9 @@ export default function EventsManagementPage() {
             onClick: () => setPendingDeleteId(null),
           },
           {
-            label: 'Delete',
+            label: isDeletingId ? 'Deleting...' : 'Delete',
             variant: 'danger',
+            disabled: Boolean(isDeletingId),
             onClick: () => {
               if (pendingDeleteId) {
                 handleDelete(pendingDeleteId);
@@ -236,13 +260,15 @@ export default function EventsManagementPage() {
               <div className="flex gap-3">
                 <button
                   type="submit"
+                  disabled={isSubmitting}
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
                 >
-                  {editingId ? 'Update Event' : 'Create Event'}
+                  {isSubmitting ? 'Saving...' : editingId ? 'Update Event' : 'Create Event'}
                 </button>
                 <button
                   type="button"
                   onClick={handleCancel}
+                  disabled={isSubmitting}
                   className="flex-1 px-4 py-2 bg-gray-300 text-gray-900 font-medium rounded-lg hover:bg-gray-400 transition"
                 >
                   Cancel
@@ -281,15 +307,17 @@ export default function EventsManagementPage() {
                 <div className="flex gap-3 pt-4 border-t">
                   <button
                     onClick={() => handleEdit(event)}
+                    disabled={Boolean(isDeletingId)}
                     className="w-1/2 px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => setPendingDeleteId(event.id)}
+                    disabled={Boolean(isDeletingId)}
                     className="w-1/2 px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition"
                   >
-                    Delete
+                    {isDeletingId === event.id ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               </div>
