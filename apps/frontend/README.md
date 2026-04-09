@@ -24,6 +24,14 @@ npm install
 NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
+Also make sure backend env has:
+
+```env
+FRONTEND_URL=http://localhost:3001
+```
+
+This must match your frontend URL so backend CORS allows browser requests.
+
 3. Start dev server:
 
 ```bash

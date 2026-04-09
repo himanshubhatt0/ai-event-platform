@@ -18,6 +18,7 @@ Path: `apps/backend/src`
 
 - `main.ts`
 	Bootstraps Nest app with global validation, CORS, and cookie parsing.
+	CORS origin is configured using backend env key `FRONTEND_URL` with fallback `http://localhost:3001` and `credentials: true`.
 
 ### 2.1 Auth Module
 

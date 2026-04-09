@@ -24,10 +24,18 @@ npm install
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/eventdb
 JWT_SECRET=your_secret
+FRONTEND_URL=http://localhost:3001
 OPENAI_API_KEY=your_openai_key
 PINECONE_API_KEY=your_pinecone_key
 PINECONE_INDEX=ai-event-index
 ```
+
+`FRONTEND_URL` is used by backend CORS in `src/main.ts`:
+
+- `origin: process.env.FRONTEND_URL || 'http://localhost:3001'`
+- `credentials: true`
+
+If your frontend runs on a different domain/port, update `FRONTEND_URL` accordingly.
 
 3. Run Prisma migrations and client generation:
 
