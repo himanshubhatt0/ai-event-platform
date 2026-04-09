@@ -9,6 +9,42 @@ import Link from 'next/link';
 import { Toast } from '@/components/Toast';
 import { extractApiErrorMessage } from '@/utils/apiError';
 
+type EventsPageData = {
+  orgData: Organization;
+  eventsData: Event[];
+};
+
+const pageDataCache = new Map<string, EventsPageData>();
+const pageDataInFlight = new Map<string, Promise<EventsPageData>>();
+
+async function getEventsPageData(orgId: string): Promise<EventsPageData> {
+  const cached = pageDataCache.get(orgId);
+  if (cached) {
+    return cached;
+  }
+
+  const existingRequest = pageDataInFlight.get(orgId);
+  if (existingRequest) {
+    return existingRequest;
+  }
+
+  const request = Promise.all([
+    organizationService.getOrganizationById(orgId),
+    organizationService.getOrgEvents(orgId),
+  ])
+    .then(([orgData, eventsData]) => {
+      const data = { orgData, eventsData };
+      pageDataCache.set(orgId, data);
+      return data;
+    })
+    .finally(() => {
+      pageDataInFlight.delete(orgId);
+    });
+
+  pageDataInFlight.set(orgId, request);
+  return request;
+}
+
 export default function EventsManagementPage() {
   const router = useRouter();
   const params = useParams();
@@ -56,10 +92,7 @@ export default function EventsManagementPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [orgData, eventsData] = await Promise.all([
-        organizationService.getOrganizationById(orgId),
-        organizationService.getOrgEvents(orgId),
-      ]);
+      const { orgData, eventsData } = await getEventsPageData(orgId);
       setOrganization(orgData);
       setEvents(eventsData);
     } catch (err: any) {
@@ -89,7 +122,19 @@ export default function EventsManagementPage() {
         ...formData,
         organizationId: orgId,
       });
-      setEvents((prev) => [newEvent, ...prev]);
+      setEvents((prev) => {
+        const nextEvents = [newEvent, ...prev];
+
+        const cached = pageDataCache.get(orgId);
+        if (cached) {
+          pageDataCache.set(orgId, {
+            ...cached,
+            eventsData: nextEvents,
+          });
+        }
+
+        return nextEvents;
+      });
       setToastType('success');
       setToastMessage('Event created successfully');
 
