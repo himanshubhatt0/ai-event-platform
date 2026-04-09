@@ -1,264 +1,199 @@
 # AI Event Platform - Full Folder and Route Flow Understanding
 
-This document explains how the project is structured and how data flows end-to-end across backend and frontend.
+This file describes the current structure and runtime flow for the monorepo as of the latest cleanup pass.
 
 ## 1. High-Level Architecture
 
-- apps/backend: NestJS API with Prisma, JWT auth, feed/search/interaction logic.
-- apps/frontend: Next.js app with route-based pages and service-layer API clients.
-- Backend is source of truth for entities and business logic.
-- Frontend calls backend APIs through axios service modules.
+- `apps/backend`: NestJS API with Prisma, JWT auth, feed/search/interaction logic.
+- `apps/frontend`: Next.js UI with Redux auth state and API service layer.
+- Backend is source of truth for auth, entities, interactions, and semantic ranking.
+- Frontend consumes backend APIs via axios wrappers.
 
-## 2. Backend Folder Flow
+## 2. Backend Folder and Module Flow
 
-Path: apps/backend/src
+Path: `apps/backend/src`
 
-- app.module.ts
-- Purpose: Registers all modules into one application.
-- Modules wired: auth, organization, event, product, feed, interaction, search.
+- `app.module.ts`
+	Registers modules: `auth`, `organization`, `event`, `product`, `feed`, `interaction`, `search`.
 
-- main.ts
-- Purpose: Bootstraps Nest app, enables CORS, cookie parsing, and global validation.
+- `main.ts`
+	Bootstraps Nest app with global validation, CORS, and cookie parsing.
 
-### 2.1 Auth Module Flow
+### 2.1 Auth Module
 
-Path: apps/backend/src/modules/auth
+Path: `apps/backend/src/modules/auth`
 
-- auth.controller.ts
-- Routes:
-- POST /auth/register
-- POST /auth/login
-- GET /auth/me (JWT protected)
+- `auth.controller.ts`
+	- `POST /auth/register`
+	- `POST /auth/login`
+	- `GET /auth/me`
 
-- auth.service.ts
-- Handles register/login and token creation.
+- `auth.service.ts`
+	- registration/login logic
+	- JWT generation
 
-- jwt.strategy.ts, jwt-auth.guard.ts
-- Reads JWT from Authorization header or auth_token cookie.
-- Adds authenticated user to request object.
+- `jwt.strategy.ts`, `jwt-auth.guard.ts`
+	- validates tokens and injects `req.user`
 
-### 2.2 Organization Module Flow
+### 2.2 Organization Module
 
-Path: apps/backend/src/modules/organization
+Path: `apps/backend/src/modules/organization`
 
-- organization.controller.ts (JWT protected)
-- Main routes:
-- POST /organization
-- GET /organization
-- GET /organization/:orgId
-- PUT /organization/:orgId
-- DELETE /organization/:orgId
-- GET /organization/:orgId/events
-- GET /organization/:orgId/products
-- GET /organization/:orgId/users
-- POST /organization/:orgId/user/:userId
-- DELETE /organization/:orgId/user/:userId
+- `organization.controller.ts` (JWT protected)
+	- `POST /organization/mine`
+	- `POST /organization`
+	- `GET /organization`
+	- `GET /organization/:orgId`
+	- `PUT /organization/:orgId`
+	- `DELETE /organization/:orgId`
+	- `POST /organization/:orgId/user/:userId`
+	- `DELETE /organization/:orgId/user/:userId`
+	- `GET /organization/:orgId/users`
+	- `GET /organization/:orgId/events`
+	- `GET /organization/:orgId/products`
 
-- organization.service.ts
-- Handles organization CRUD and organization-level views of users/events/products.
+- `organization.service.ts`
+	- organization create/update/delete and user assignment helpers
+	- org-scoped event/product listings
 
-### 2.3 Event Module Flow
+### 2.3 Event Module
 
-Path: apps/backend/src/modules/event
+Path: `apps/backend/src/modules/event`
 
-- event.controller.ts (JWT protected)
-- Routes:
-- POST /event
-- GET /event
-- GET /event/:eventId
-- PUT /event/:eventId
-- DELETE /event/:eventId
+- `event.controller.ts` (JWT + `OrgGuard` where needed)
+	- `POST /event`
+	- `GET /event`
+	- `GET /event/:eventId`
+	- `PUT /event/:eventId`
+	- `DELETE /event/:eventId`
 
-- event.service.ts
-- Creates/reads/updates/deletes events.
-- On create: generates embedding and upserts vector metadata to Pinecone.
+- `event.service.ts`
+	- create/read/update/delete event records
+	- Pinecone sync on create/update/delete
 
-### 2.4 Product Module Flow
+### 2.4 Product Module
 
-Path: apps/backend/src/modules/product
+Path: `apps/backend/src/modules/product`
 
-- product.controller.ts (JWT protected)
-- Routes:
-- POST /product
-- GET /product
-- GET /product/:productId
-- PUT /product/:productId
-- DELETE /product/:productId
+- `product.controller.ts` (JWT + `OrgGuard` where needed)
+	- `POST /product`
+	- `GET /product`
+	- `GET /product/:productId`
+	- `PUT /product/:productId`
+	- `DELETE /product/:productId`
 
-- product.service.ts
-- Creates/reads/updates/deletes products.
-- On create: generates embedding and upserts vector metadata to Pinecone.
+- `product.service.ts`
+	- create/read/update/delete product records
+	- Pinecone sync on create/update/delete
 
-### 2.5 Feed Module Flow
+### 2.5 Feed Module
 
-Path: apps/backend/src/modules/feed
+Path: `apps/backend/src/modules/feed`
 
-- feed.controller.ts (JWT protected)
-- Route:
-- GET /feed
+- `feed.controller.ts`
+	- `GET /feed`
 
-- feed.service.ts
-- Fetches events + products.
-- Returns mixed feed sorted by createdAt desc.
-- Adds per-item interactionCounts and userInteractions for current user.
+- `feed.service.ts`
+	- merges events and products into one list
+	- computes per-item interaction counts and current-user interaction flags
 
-### 2.6 Search Module Flow
+### 2.6 Interaction Module
 
-Path: apps/backend/src/modules/search
+Path: `apps/backend/src/modules/interaction`
 
-- search.controller.ts (JWT protected)
-- Route:
-- GET /search?q=<natural-language-query>
+- `interaction.controller.ts`
+	- `POST /interaction`
 
-- search.service.ts
-- Generates embedding for query.
-- Queries Pinecone vector index.
-- Fetches matched events/products from DB.
-- Preserves relevance order and adds relevanceScore.
-- Adds interactionCounts and userInteractions.
+- `interaction.service.ts`
+	- toggle behavior for `LIKE`, `SAVE`, `REGISTER`
 
-### 2.7 Interaction Module Flow
+### 2.7 Search Module
 
-Path: apps/backend/src/modules/interaction
+Path: `apps/backend/src/modules/search`
 
-- interaction.controller.ts (JWT protected)
-- Route:
-- POST /interaction
+- `search.controller.ts`
+	- `GET /search?q=<query>`
 
-- interaction.service.ts
-- Toggle model for interaction types: LIKE, SAVE, REGISTER.
-- If same interaction exists: remove it and return toggledOn false.
-- If not exists: create it and return toggledOn true.
+- `search.service.ts`
+	- query embedding generation
+	- Pinecone vector lookup
+	- DB hydration + relevance ordering + interaction summary data
 
-## 3. Database Entity Understanding
+## 3. Database Entity Flow
 
-Path: apps/backend/prisma/schema.prisma
+Path: `apps/backend/prisma/schema.prisma`
 
-- User
-- Core user account.
-- Optional organizationId relation.
-- Has many interactions.
+- `User` -> optional `organizationId`, owns many `Interaction`
+- `Organization` -> owns many `User`, `Event`, `Product`
+- `Event` -> belongs to `Organization`, has many `Interaction`
+- `Product` -> belongs to `Organization`, has many `Interaction`
+- `Interaction` -> belongs to `User`, points to `Event` or `Product`, type in `LIKE | SAVE | REGISTER`
 
-- Organization
-- Owns many events, products, users.
+## 4. Frontend Folder and Route Flow
 
-- Event
-- Belongs to organization.
-- Has many interactions.
+Path: `apps/frontend`
 
-- Product
-- Belongs to organization.
-- Has many interactions.
+- `app/`: route pages
+- `services/`: backend API wrappers
+- `redux/`: auth slice/store/provider
+- `components/`: shared UI (`AppHeader`, `Toast`, `PopupModal`)
+- `utils/`: cookies and API error parsing helpers
 
-- Interaction
-- Belongs to user.
-- Targets either eventId or productId.
-- type enum: LIKE, SAVE, REGISTER.
+### 4.1 Active Pages
 
-## 4. Frontend Folder Flow
+Path: `apps/frontend/app`
 
-Path: apps/frontend
-
-- app/
-- Next.js route pages (UI entry points).
-
-- services/
-- API abstraction for backend calls.
-
-- redux/
-- Auth state management and persistence flow.
-
-- components/
-- Shared reusable UI pieces (header, toast).
-
-### 4.1 Core Frontend Routes
-
-Path: apps/frontend/app
-
-- /register
-- User registration UI.
-
-- /login
-- User login UI.
-
-- /dashboard
-- Main authenticated landing page with quick links.
-
-- /organization
-- Organization list/create/delete management.
-
-- /organization/[id]/events
-- Event create/read/update/delete for selected organization.
-
-- /organization/[id]/products
-- Product create/read/update/delete for selected organization.
-
-- /feed
-- Mixed events + products feed with like/save/register toggles.
-
-- /search
-- Natural language search page with relevance-ranked results.
+- `/register`: account creation
+- `/login`: login and redirect handling
+- `/dashboard`: role-aware cards (normal user vs org user)
+- `/organization`: redirect page to correct org location (or dashboard)
+- `/organization/[id]/events`: create + list org events
+- `/organization/[id]/products`: create + list org products
+- `/feed`: mixed feed with interactions
+- `/search`: semantic query + interaction toggles
 
 ### 4.2 Frontend Service Layer
 
-Path: apps/frontend/services
+Path: `apps/frontend/services`
 
-- api.ts
-- Shared axios instance.
-- Automatically attaches token from cookie/localStorage.
+- `api.ts`: axios instance with auth header interceptor
+- `auth.service.ts`: `/auth/register`, `/auth/login`, `/auth/me`
+- `organization.service.ts`: currently active org/event/product API wrappers used by pages/components
+- `marketplace.service.ts`: `/feed`, `/search`, `/interaction`
 
-- auth.service.ts
-- login/register/me APIs.
+Note: unused organization wrapper methods were removed during cleanup to keep only currently used calls.
 
-- organization.service.ts
-- Organization + event + product CRUD APIs.
-
-- marketplace.service.ts
-- Feed API, Search API, Interaction toggle API.
-
-## 5. End-to-End Runtime Flow (User Journey)
+## 5. End-to-End User Flow
 
 ### 5.1 Authentication
 
-1. User registers on /register or logs in on /login.
-2. Frontend stores JWT in cookie/local storage.
-3. AuthInitializer requests /auth/me and hydrates redux auth state.
-4. Protected pages rely on token + backend JWT guards.
+1. User registers or logs in.
+2. JWT is persisted in cookie.
+3. `AuthInitializer` hydrates redux user state via `/auth/me`.
+4. Protected pages verify auth on client and backend guard verifies on API.
 
-### 5.2 Organization and Inventory Management
+### 5.2 Organization Owner Flow
 
-1. User opens /organization.
-2. User creates organization.
-3. User opens /organization/:id/events and /organization/:id/products.
-4. User performs full CRUD on events and products.
-5. Backend stores data in PostgreSQL and embeddings in Pinecone on create.
+1. User without organization creates one from header (`POST /organization/mine`).
+2. User is redirected to `/organization/:id/events`.
+3. User creates events/products from org pages.
+4. Backend persists data and syncs vectors for search.
 
-### 5.3 Feed Flow
+### 5.3 Consumer Flow
 
-1. User opens /feed.
-2. Frontend calls GET /feed.
-3. Backend returns mixed event/product list with interaction summary.
-4. User toggles like/save/register.
-5. Frontend calls POST /interaction and updates feed state.
+1. User opens `/feed` for combined marketplace items.
+2. User toggles `LIKE`, `SAVE`, `REGISTER` via `/interaction`.
+3. User opens `/search` and submits natural-language query.
+4. Backend returns relevance-ranked event/product matches.
 
-### 5.4 Search Flow
+## 6. Security and Authorization
 
-1. User opens /search.
-2. User enters natural language query.
-3. Frontend calls GET /search?q=...
-4. Backend runs embedding + vector search + DB hydration.
-5. Frontend shows ranked results with relevance score.
-6. User can toggle like/save/register directly on results.
+- `JwtAuthGuard` protects business endpoints.
+- `OrgGuard` enforces organization-based write actions for event/product mutations.
+- Frontend checks auth state for UX, backend guards enforce real authorization.
 
-## 6. Route Protection Understanding
+## 7. Testing Status
 
-- Backend protection is enforced via JwtAuthGuard on all core business modules.
-- Frontend also checks auth cookie before rendering private pages.
-- Real authorization trust is always backend guard + validated user context.
-
-## 7. Where To Extend Next
-
-- Add recommendation endpoint based on interaction history.
-- Add pagination/filter options in feed and search.
-- Add role-based organization permissions.
-- Add automated tests for feed/search/interaction integration.
+- Backend tests: run with `npm test` in `apps/backend`.
+- Frontend tests: run with `npm test -- --runInBand` in `apps/frontend`.
+- Test files were updated to match current controller signatures and current page UI output.

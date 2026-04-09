@@ -23,7 +23,7 @@ describe('SearchController', () => {
   it('should return results', async () => {
     mockService.search.mockResolvedValue([{ id: '1' }]);
 
-    const result = await controller.search('test');
+    const result = await controller.search('test', { user: { id: 'u1' } } as any);
 
     expect(result.length).toBe(1);
   });

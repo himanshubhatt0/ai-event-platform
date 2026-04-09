@@ -28,12 +28,15 @@ describe('ProductController', () => {
   it('should create product', async () => {
     mockService.createProduct.mockResolvedValue({ id: 'prod1' });
 
-    const result = await controller.create({
-      title: 'Test',
-      description: 'Desc',
-      price: 100,
-      organizationId: 'org1',
-    });
+    const result = await controller.create(
+      { user: { organizationId: 'org1' } } as any,
+      {
+        title: 'Test',
+        description: 'Desc',
+        price: 100,
+        organizationId: 'org1',
+      },
+    );
 
     expect(result.id).toBe('prod1');
   });

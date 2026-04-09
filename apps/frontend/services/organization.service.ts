@@ -44,50 +44,14 @@ export interface CreateMyOrganizationResponse {
 
 // Organization APIs
 export const organizationService = {
-  // Organizations
-  getAllOrganizations: async (): Promise<Organization[]> => {
-    const response = await api.get('/organization');
-    return response.data;
-  },
-
+  // Organizations used by the current frontend flows
   getOrganizationById: async (orgId: string): Promise<Organization> => {
     const response = await api.get(`/organization/${orgId}`);
     return response.data;
   },
 
-  createOrganization: async (name: string): Promise<Organization> => {
-    const response = await api.post('/organization', { name });
-    return response.data;
-  },
-
   createMyOrganization: async (name: string): Promise<CreateMyOrganizationResponse> => {
     const response = await api.post('/organization/mine', { name });
-    return response.data;
-  },
-
-  updateOrganization: async (orgId: string, name: string): Promise<Organization> => {
-    const response = await api.put(`/organization/${orgId}`, { name });
-    return response.data;
-  },
-
-  deleteOrganization: async (orgId: string): Promise<Organization> => {
-    const response = await api.delete(`/organization/${orgId}`);
-    return response.data;
-  },
-
-  // Users in Organization
-  getOrgUsers: async (orgId: string): Promise<Organization> => {
-    const response = await api.get(`/organization/${orgId}/users`);
-    return response.data;
-  },
-
-  assignUserToOrg: async (orgId: string, userId: string): Promise<User> => {
-    const response = await api.post(`/organization/${orgId}/user/${userId}`);
-    return response.data;
-  },
-
-  removeUserFromOrg: async (userId: string): Promise<User> => {
-    const response = await api.delete(`/organization/user/${userId}`);
     return response.data;
   },
 
@@ -107,28 +71,6 @@ export const organizationService = {
     return response.data;
   },
 
-  getEventById: async (eventId: string): Promise<Event> => {
-    const response = await api.get(`/event/${eventId}`);
-    return response.data;
-  },
-
-  updateEvent: async (
-    eventId: string,
-    data: Partial<{
-      title: string;
-      description: string;
-      date: string;
-    }>,
-  ): Promise<Event> => {
-    const response = await api.put(`/event/${eventId}`, data);
-    return response.data;
-  },
-
-  deleteEvent: async (eventId: string): Promise<Event> => {
-    const response = await api.delete(`/event/${eventId}`);
-    return response.data;
-  },
-
   // Products
   getOrgProducts: async (orgId: string): Promise<Product[]> => {
     const response = await api.get(`/organization/${orgId}/products`);
@@ -142,28 +84,6 @@ export const organizationService = {
     organizationId: string;
   }): Promise<Product> => {
     const response = await api.post('/product', data);
-    return response.data;
-  },
-
-  getProductById: async (productId: string): Promise<Product> => {
-    const response = await api.get(`/product/${productId}`);
-    return response.data;
-  },
-
-  updateProduct: async (
-    productId: string,
-    data: Partial<{
-      title: string;
-      description: string;
-      price: number;
-    }>,
-  ): Promise<Product> => {
-    const response = await api.put(`/product/${productId}`, data);
-    return response.data;
-  },
-
-  deleteProduct: async (productId: string): Promise<Product> => {
-    const response = await api.delete(`/product/${productId}`);
     return response.data;
   },
 };

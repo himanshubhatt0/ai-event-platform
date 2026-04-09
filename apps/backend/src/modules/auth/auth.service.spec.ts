@@ -31,7 +31,11 @@ describe('AuthService', () => {
   });
 
   it('should register user', async () => {
-    mockPrisma.user.create.mockResolvedValue({ id: '1' });
+    mockPrisma.user.create.mockResolvedValue({
+      id: '1',
+      email: 'test@test.com',
+      name: 'Test',
+    });
 
     const result = await service.register({
       email: 'test@test.com',
@@ -39,7 +43,14 @@ describe('AuthService', () => {
       name: 'Test',
     });
 
-    expect(result).toEqual({ id: '1' });
+    expect(result).toEqual({
+      message: 'User registered successfully',
+      user: {
+        id: '1',
+        email: 'test@test.com',
+        name: 'Test',
+      },
+    });
   });
 
   it('should login user', async () => {

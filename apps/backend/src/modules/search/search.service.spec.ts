@@ -33,16 +33,37 @@ describe('SearchService', () => {
   });
 
   it('should return search results', async () => {
-    mockPrisma.event.findMany.mockResolvedValue([{ id: 'e1' }]);
-    mockPrisma.product.findMany.mockResolvedValue([{ id: 'p1' }]);
+    mockPrisma.event.findMany.mockResolvedValue([
+      {
+        id: 'e1',
+        title: 'Event 1',
+        description: 'Desc',
+        createdAt: new Date().toISOString(),
+        organizationId: 'org1',
+        organization: { id: 'org1', name: 'Org 1' },
+        interactions: [],
+      },
+    ]);
+    mockPrisma.product.findMany.mockResolvedValue([
+      {
+        id: 'p1',
+        title: 'Product 1',
+        description: 'Desc',
+        price: 100,
+        createdAt: new Date().toISOString(),
+        organizationId: 'org1',
+        organization: { id: 'org1', name: 'Org 1' },
+        interactions: [],
+      },
+    ]);
 
-    const result = await service.search('test');
+    const result = await service.search('test', 'u1');
 
     expect(pineconeService.index.query).toHaveBeenCalled();
     expect(result.length).toBe(2);
   });
 
   it('should throw if empty query', async () => {
-    await expect(service.search('')).rejects.toThrow();
+    await expect(service.search('', 'u1')).rejects.toThrow();
   });
 });

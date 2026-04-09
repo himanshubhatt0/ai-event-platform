@@ -1,8 +1,8 @@
 import type React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer, { logout } from '@/redux/slices/authSlice';
+import authReducer from '@/redux/slices/authSlice';
 import DashboardPage from '@/app/dashboard/page';
 import { useRouter } from 'next/navigation';
 
@@ -62,10 +62,10 @@ describe('DashboardPage', () => {
 
     renderWithProviders(<DashboardPage />, store);
 
-    expect(screen.getByText('AI Event Platform')).toBeInTheDocument();
-    expect(screen.getByText('Welcome back, Test User!')).toBeInTheDocument();
-    expect(screen.getByText('Dashboard Overview')).toBeInTheDocument();
-    expect(screen.getByText('Logout')).toBeInTheDocument();
+    expect(screen.getByText('Welcome, Test User')).toBeInTheDocument();
+    expect(screen.getByText('Normal User Account')).toBeInTheDocument();
+    expect(screen.getByText('Browse Feed')).toBeInTheDocument();
+    expect(screen.getByText('AI Search')).toBeInTheDocument();
   });
 
   it('renders dashboard with email when name is not available', () => {
@@ -74,31 +74,32 @@ describe('DashboardPage', () => {
 
     renderWithProviders(<DashboardPage />, store);
 
-    expect(screen.getByText('Welcome back, test@example.com!')).toBeInTheDocument();
+    expect(screen.getByText('Welcome, test@example.com')).toBeInTheDocument();
   });
 
-  it('handles logout', () => {
+  it('displays normal user sections', () => {
     const mockUser = { id: '1', email: 'test@example.com', name: 'Test User' };
     const store = createMockStore({ user: mockUser, token: 'mock-token' });
 
     renderWithProviders(<DashboardPage />, store);
 
-    const logoutButton = screen.getByText('Logout');
-    fireEvent.click(logoutButton);
-
-    expect(store.getState().auth.user).toBe(null);
-    expect(store.getState().auth.token).toBe(null);
-    expect(mockRouter.push).toHaveBeenCalledWith('/login');
+    expect(screen.getByText('Browse Feed')).toBeInTheDocument();
+    expect(screen.getByText('AI Search')).toBeInTheDocument();
   });
 
-  it('displays dashboard sections', () => {
-    const mockUser = { id: '1', email: 'test@example.com', name: 'Test User' };
+  it('displays organization user sections', () => {
+    const mockUser = {
+      id: '1',
+      email: 'org@example.com',
+      name: 'Org User',
+      organizationId: 'org-1',
+    };
     const store = createMockStore({ user: mockUser, token: 'mock-token' });
 
     renderWithProviders(<DashboardPage />, store);
 
-    expect(screen.getByText('Events')).toBeInTheDocument();
-    expect(screen.getByText('Interactions')).toBeInTheDocument();
-    expect(screen.getByText('Organizations')).toBeInTheDocument();
+    expect(screen.getByText('Organization Account')).toBeInTheDocument();
+    expect(screen.getByText('My Events')).toBeInTheDocument();
+    expect(screen.getByText('My Products')).toBeInTheDocument();
   });
 });

@@ -22,12 +22,15 @@ describe('EventController', () => {
   it('should create event', async () => {
     mockService.createEvent.mockResolvedValue({ id: 'event1' });
 
-    const result = await controller.create({
-      title: 'Test',
-      description: 'Desc',
-      date: new Date().toISOString(),
-      organizationId: 'org1',
-    });
+    const result = await controller.create(
+      { user: { organizationId: 'org1' } } as any,
+      {
+        title: 'Test',
+        description: 'Desc',
+        date: new Date().toISOString(),
+        organizationId: 'org1',
+      },
+    );
 
     expect(result.id).toBe('event1');
   });

@@ -28,25 +28,25 @@ describe('InteractionService', () => {
     mockPrisma.interaction.findFirst.mockResolvedValue(null);
     mockPrisma.interaction.create.mockResolvedValue({ id: '1' });
 
-    const result = await service.interact({
-      userId: 'u1',
+    const result = await service.interact('u1', {
       type: 'LIKE',
       eventId: 'e1',
     } as any);
 
-    expect(result.id).toBe('1');
+    expect(result.toggledOn).toBe(true);
+    expect(result.interaction.id).toBe('1');
   });
 
   it('should toggle interaction', async () => {
     mockPrisma.interaction.findFirst.mockResolvedValue({ id: '1' });
     mockPrisma.interaction.delete.mockResolvedValue({});
 
-    const result = await service.interact({
-      userId: 'u1',
+    const result = await service.interact('u1', {
       type: 'LIKE',
       eventId: 'e1',
     } as any);
 
-    expect(result.id).toBe('1');
+    expect(result.toggledOn).toBe(false);
+    expect(result.interaction.id).toBe('1');
   });
 });

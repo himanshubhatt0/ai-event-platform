@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Event Platform Frontend
 
-## Getting Started
+Next.js frontend for auth, dashboard, organization management pages, feed browsing, and semantic search.
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router)
+- React + TypeScript
+- Redux Toolkit
+- Axios
+- Jest + Testing Library
+
+## Run Locally
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Configure environment variables (example `.env.local`):
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+3. Start dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Frontend runs on `http://localhost:3001`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Main Routes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `/login`
+- `/register`
+- `/dashboard`
+- `/organization`
+- `/organization/[id]/events`
+- `/organization/[id]/products`
+- `/feed`
+- `/search`
 
-## Learn More
+## Service Layer
 
-To learn more about Next.js, take a look at the following resources:
+- `services/api.ts`: shared axios instance + auth header interceptor
+- `services/auth.service.ts`: auth endpoints
+- `services/organization.service.ts`: active org/event/product endpoints used by current UI
+- `services/marketplace.service.ts`: feed, semantic search, interaction toggle
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Usage Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Current frontend only keeps API wrapper methods that are used by active pages/components. Unused wrappers were removed to keep service code lean and easier to maintain.
 
-## Deploy on Vercel
+## Test
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Run frontend unit tests:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm test -- --runInBand
+```

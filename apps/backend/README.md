@@ -1,95 +1,25 @@
-# 🚀 AI Event Platform – Backend
+# AI Event Platform Backend
 
-A scalable backend system built using **NestJS + Prisma + PostgreSQL + OpenAI + Pinecone**, supporting event/product management with **AI-powered semantic search**.
+NestJS backend for authentication, organization onboarding, event/product publishing, feed, interaction toggling, and semantic search.
 
----
+## Stack
 
-# 🧠 📌 Features
+- NestJS
+- Prisma + PostgreSQL
+- JWT auth
+- OpenAI embeddings
+- Pinecone vector search
+- Jest
 
-### ✅ Core Modules
+## Setup
 
-* Authentication (JWT-based)
-* Organization Management
-* Event Management
-* Product Management
-* Interaction System (Like / Save / Register)
-
-###  Advanced Features
-
-* AI-powered semantic search using OpenAI embeddings
-* Vector similarity search using Pinecone
-* Unified feed (events + products)
-* Clean architecture with modular structure
-* Full unit test coverage (Jest)
-
----
-
-# 🏗️ Tech Stack
-
-| Layer             | Technology          |
-| ----------------- | ------------------- |
-| Backend Framework | NestJS              |
-| ORM               | Prisma              |
-| Database          | PostgreSQL          |
-| AI                | OpenAI (Embeddings) |
-| Vector DB         | Pinecone            |
-| Auth              | JWT                 |
-| Testing           | Jest                |
-
----
-
-# 📁 Project Structure
-
-```
-apps/backend/
-│
-├── src/
-│   ├── common/
-│   │   └── utils/
-│   │       ├── ai.service.ts
-│   │       └── pinecone.service.ts
-│   │
-│   ├── modules/
-│   │   ├── auth/
-│   │   ├── organization/
-│   │   ├── event/
-│   │   ├── product/
-│   │   ├── interaction/
-│   │   ├── feed/
-│   │   └── search/
-│   │
-│   └── prisma/
-│
-├── prisma/
-│   └── schema.prisma
-│
-└── .env
-```
-
----
-
-# ⚙️ Setup Instructions
-
-## 1️⃣ Clone Repository
-
-```bash
-git clone https://github.com/himanshubhatt0/ai-event-platform.git
-cd ai-event-platform/apps/backend
-```
-
----
-
-## 2️⃣ Install Dependencies
+1. Install dependencies:
 
 ```bash
 npm install
 ```
 
----
-
-## 3️⃣ Environment Variables
-
-Create `.env` file:
+2. Configure `.env` in `apps/backend`:
 
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/eventdb
@@ -99,111 +29,82 @@ PINECONE_API_KEY=your_pinecone_key
 PINECONE_INDEX=ai-event-index
 ```
 
----
-
-## 4️⃣ Setup Database
+3. Run Prisma migrations and client generation:
 
 ```bash
 npx prisma migrate dev
 npx prisma generate
 ```
 
----
-
-## 5️⃣ Run Server
+4. Start API:
 
 ```bash
 npm run start:dev
 ```
 
-Server will run on:
+Default API URL: `http://localhost:3000`
 
-```
-http://localhost:3000
-```
+## Modules
 
----
+- `auth`: register, login, current user
+- `organization`: create personal org, org details, org events/products, org admin endpoints
+- `event`: create/list/get/update/delete events
+- `product`: create/list/get/update/delete products
+- `feed`: mixed event + product feed with interaction stats
+- `interaction`: toggle `LIKE` / `SAVE` / `REGISTER`
+- `search`: semantic search with relevance score
 
-#  API Endpoints
+## API Endpoints
 
-## Auth
+All endpoints below are JWT-protected except register/login.
 
-* `POST /auth/register`
-* `POST /auth/login`
+### Auth
 
-## Organization
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/me`
 
-* `POST /organization`
-* `POST /organization/:orgId/user/:userId`
-* `GET /organization/:orgId/users`
+### Organization
 
-## Event
+- `POST /organization/mine`
+- `POST /organization`
+- `GET /organization`
+- `GET /organization/:orgId`
+- `PUT /organization/:orgId`
+- `DELETE /organization/:orgId`
+- `POST /organization/:orgId/user/:userId`
+- `DELETE /organization/:orgId/user/:userId`
+- `GET /organization/:orgId/users`
+- `GET /organization/:orgId/events`
+- `GET /organization/:orgId/products`
 
-* `POST /event`
-* `GET /event`
+### Event
 
-## Product
+- `POST /event`
+- `GET /event`
+- `GET /event/:eventId`
+- `PUT /event/:eventId`
+- `DELETE /event/:eventId`
 
-* `POST /product`
-* `GET /product`
+### Product
 
-## Feed
+- `POST /product`
+- `GET /product`
+- `GET /product/:productId`
+- `PUT /product/:productId`
+- `DELETE /product/:productId`
 
-* `GET /feed`
+### Feed / Interaction / Search
 
-## Interaction
+- `GET /feed`
+- `POST /interaction`
+- `GET /search?q=<query>`
 
-* `POST /interaction`
+## Test
 
-## 🔍 Search (AI Powered)
-
-* `GET /search?q=your_query`
-
----
-
-# 🤖 AI Semantic Search
-
-### Flow:
-
-```
-User Query
-   ↓
-OpenAI → Generate Embedding
-   ↓
-Pinecone → Vector Similarity Search
-   ↓
-PostgreSQL → Fetch Actual Data
-   ↓
-Return Ranked Results
-```
-
-### Example:
-
-```http
-GET /search?q=cheap laptop
-```
-
-### Result:
-
-* Matches "Affordable Laptop"
-* Even if keyword "cheap" not present
-
----
-
-# 🧪 Running Tests
+Run backend unit tests:
 
 ```bash
-npm run test
+npm test
 ```
-
-✔ Unit tests for:
-
-* Services
-* Controllers
-
----
-
-# 👨‍💻 Author
-
-**Himanshu Bhatt**
 

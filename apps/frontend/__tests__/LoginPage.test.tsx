@@ -9,6 +9,9 @@ import { useRouter } from 'next/navigation';
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
+  useSearchParams: jest.fn(() => ({
+    get: jest.fn(() => null),
+  })),
 }));
 
 const mockRouter = {
@@ -87,7 +90,7 @@ describe('LoginPage', () => {
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.click(submitButton);
 
-    // Wait for the async action to be dispatched
+    // Wait for the async thunk to flip loading state
     await waitFor(() => {
       expect(store.getState().auth.loading).toBe(true);
     });

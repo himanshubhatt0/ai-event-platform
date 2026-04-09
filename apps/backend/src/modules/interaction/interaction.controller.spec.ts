@@ -21,14 +21,14 @@ describe('InteractionController', () => {
   });
 
   it('should call interact', async () => {
-    mockService.interact.mockResolvedValue({ id: '1' });
+    mockService.interact.mockResolvedValue({ toggledOn: true, interaction: { id: '1' } });
 
     const result = await controller.interact({
       userId: 'u1',
       type: 'LIKE',
       eventId: 'e1',
-    } as any);
+    } as any, { user: { id: 'u1' } } as any);
 
-    expect(result.id).toBe('1');
+    expect(result.interaction.id).toBe('1');
   });
 });
