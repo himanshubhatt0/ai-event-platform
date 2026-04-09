@@ -144,7 +144,7 @@ export default function ProductsManagementPage() {
               setShowCreateForm(!showCreateForm);
               setFormData({ title: '', description: '', price: '' });
             }}
-            className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+            className="px-6 py-3 bg-indigo-600 cursor-pointer text-white font-medium rounded-lg hover:bg-indigo-700 transition"
           >
             {showCreateForm ? 'Cancel' : 'Create Product'}
           </button>
@@ -196,7 +196,7 @@ export default function ProductsManagementPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+                  className="flex-1 cursor-pointer px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
                 >
                   {isSubmitting ? 'Saving...' : 'Create Product'}
                 </button>
@@ -204,7 +204,7 @@ export default function ProductsManagementPage() {
                   type="button"
                   onClick={handleCancel}
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-900 font-medium rounded-lg hover:bg-gray-400 transition"
+                  className="flex-1 cursor-pointer px-4 py-2 bg-gray-300 text-gray-900 font-medium rounded-lg hover:bg-gray-400 transition"
                 >
                   Cancel
                 </button>
