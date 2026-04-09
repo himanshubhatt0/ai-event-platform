@@ -11,7 +11,6 @@ describe('EventService', () => {
     },
     event: {
       create: jest.fn(),
-      findMany: jest.fn(),
     },
   };
 
@@ -39,13 +38,5 @@ describe('EventService', () => {
     });
 
     expect(result.id).toBe('event1');
-  });
-
-  it('should return events', async () => {
-    mockPrisma.event.findMany.mockResolvedValue([{ id: 'event1' }]);
-
-    const result = await service.getEvents();
-
-    expect(result.length).toBe(1);
   });
 });

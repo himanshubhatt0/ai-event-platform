@@ -6,13 +6,20 @@ describe('OrganizationService', () => {
   let service: OrganizationService;
 
   const mockPrisma = {
+    $transaction: jest.fn(),
     organization: {
-      create: jest.fn(),
       findUnique: jest.fn(),
       findFirst: jest.fn(),
     },
     user: {
+      findUnique: jest.fn(),
       update: jest.fn(),
+    },
+    event: {
+      findMany: jest.fn(),
+    },
+    product: {
+      findMany: jest.fn(),
     },
   };
 
@@ -27,39 +34,66 @@ describe('OrganizationService', () => {
     service = module.get<OrganizationService>(OrganizationService);
   });
 
-  it('should create organization', async () => {
-    mockPrisma.organization.create.mockResolvedValue({
-      id: 'org1',
-      name: 'Test Org',
-    });
-
-    const result = await service.createOrg({ name: 'Test Org' });
-
-    expect(result).toEqual({
-      id: 'org1',
-      name: 'Test Org',
-    });
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should assign user to organization', async () => {
-    mockPrisma.user.update.mockResolvedValue({
+  it('should create organization for user', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({
       id: 'user1',
-      organizationId: 'org1',
+      organizationId: null,
     });
+    mockPrisma.organization.findFirst.mockResolvedValue(null);
+    mockPrisma.$transaction.mockImplementation(async (callback: any) =>
+      callback({
+        organization: {
+          create: jest.fn().mockResolvedValue({ id: 'org1', name: 'Test Org' }),
+        },
+        user: {
+          update: jest.fn().mockResolvedValue({
+            id: 'user1',
+            email: 'user@example.com',
+            name: 'User',
+            organizationId: 'org1',
+          }),
+        },
+      }),
+    );
 
-    const result = await service.assignUser('org1', 'user1');
+    const result = await service.createOrgForUser('user1', { name: 'Test Org' });
 
-    expect(result.organizationId).toBe('org1');
+    expect(result.organization.id).toBe('org1');
+    expect(result.user.organizationId).toBe('org1');
   });
 
-  it('should get organization users', async () => {
+  it('should get organization details', async () => {
     mockPrisma.organization.findUnique.mockResolvedValue({
       id: 'org1',
-      users: [{ id: 'user1' }],
+      users: [],
+      events: [],
+      products: [],
     });
 
-    const result = await service.getOrgUsers('org1');
+    const result = await service.getOrganization('org1');
 
-    expect(result?.users.length).toBe(1);
+    expect(result.id).toBe('org1');
+  });
+
+  it('should get organization events', async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({ id: 'org1' });
+    mockPrisma.event.findMany.mockResolvedValue([{ id: 'event1' }]);
+
+    const result = await service.getOrgEvents('org1');
+
+    expect(result).toHaveLength(1);
+  });
+
+  it('should get organization products', async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({ id: 'org1' });
+    mockPrisma.product.findMany.mockResolvedValue([{ id: 'prod1' }]);
+
+    const result = await service.getOrgProducts('org1');
+
+    expect(result).toHaveLength(1);
   });
 });

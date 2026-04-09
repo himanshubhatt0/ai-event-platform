@@ -7,7 +7,6 @@ describe('ProductController', () => {
 
   const mockService = {
     createProduct: jest.fn(),
-    getProducts: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -39,13 +38,5 @@ describe('ProductController', () => {
     );
 
     expect(result.id).toBe('prod1');
-  });
-
-  it('should return products', async () => {
-    mockService.getProducts.mockResolvedValue([{ id: 'prod1' }]);
-
-    const result = await controller.getAll();
-
-    expect(result.length).toBe(1);
   });
 });

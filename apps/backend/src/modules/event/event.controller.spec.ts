@@ -7,7 +7,6 @@ describe('EventController', () => {
 
   const mockService = {
     createEvent: jest.fn(),
-    getEvents: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -33,13 +32,5 @@ describe('EventController', () => {
     );
 
     expect(result.id).toBe('event1');
-  });
-
-  it('should return events', async () => {
-    mockService.getEvents.mockResolvedValue([{ id: 'event1' }]);
-
-    const result = await controller.getAll();
-
-    expect(result.length).toBe(1);
   });
 });

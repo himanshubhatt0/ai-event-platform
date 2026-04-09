@@ -11,7 +11,6 @@ describe('ProductService', () => {
     },
     product: {
       create: jest.fn(),
-      findMany: jest.fn(),
     },
   };
 
@@ -59,13 +58,5 @@ describe('ProductService', () => {
         organizationId: 'org1',
       }),
     ).rejects.toThrow('Organization not found');
-  });
-
-  it('should return products', async () => {
-    mockPrisma.product.findMany.mockResolvedValue([{ id: 'prod1' }]);
-
-    const result = await service.getProducts();
-
-    expect(result.length).toBe(1);
   });
 });

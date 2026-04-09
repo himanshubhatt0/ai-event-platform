@@ -7,9 +7,10 @@ describe('OrganizationController', () => {
   let controller: OrganizationController;
 
   const mockService = {
-    createOrg: jest.fn(),
-    assignUser: jest.fn(),
-    getOrgUsers: jest.fn(),
+    createOrgForUser: jest.fn(),
+    getOrganization: jest.fn(),
+    getOrgEvents: jest.fn(),
+    getOrgProducts: jest.fn(),
   };
 
   const mockAuthService = {
@@ -28,32 +29,55 @@ describe('OrganizationController', () => {
     controller = module.get<OrganizationController>(OrganizationController);
   });
 
-  it('should create organization', async () => {
-    mockService.createOrg.mockResolvedValue({ id: 'org1' });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-    const result = await controller.create({ name: 'Test Org' });
+  it('should create organization for current user', async () => {
+    mockService.createOrgForUser.mockResolvedValue({
+      organization: { id: 'org1', name: 'Test Org' },
+      user: {
+        id: 'user1',
+        email: 'user@example.com',
+        name: 'User',
+        organizationId: 'org1',
+      },
+    });
+    mockAuthService.createAccessToken.mockReturnValue('token-123');
+
+    const result = await controller.createMine(
+      { name: 'Test Org' },
+      { user: { id: 'user1' } } as any,
+    );
+
+    expect(mockService.createOrgForUser).toHaveBeenCalledWith('user1', {
+      name: 'Test Org',
+    });
+    expect(result.access_token).toBe('token-123');
+    expect(result.organization.id).toBe('org1');
+  });
+
+  it('should get organization details', async () => {
+    mockService.getOrganization.mockResolvedValue({ id: 'org1' });
+
+    const result = await controller.getOrganization('org1');
 
     expect(result.id).toBe('org1');
   });
 
-  it('should assign user', async () => {
-    mockService.assignUser.mockResolvedValue({
-      id: 'user1',
-      organizationId: 'org1',
-    });
+  it('should get organization events', async () => {
+    mockService.getOrgEvents.mockResolvedValue([{ id: 'event1' }]);
 
-    const result = await controller.assignUser('org1', 'user1');
+    const result = await controller.getEvents('org1');
 
-    expect(result.organizationId).toBe('org1');
+    expect(result).toHaveLength(1);
   });
 
-  it('should get users', async () => {
-    mockService.getOrgUsers.mockResolvedValue({
-      users: [{ id: 'user1' }],
-    });
+  it('should get organization products', async () => {
+    mockService.getOrgProducts.mockResolvedValue([{ id: 'prod1' }]);
 
-    const result = await controller.getUsers('org1');
+    const result = await controller.getProducts('org1');
 
-    expect(result?.users.length).toBe(1);
+    expect(result).toHaveLength(1);
   });
 });

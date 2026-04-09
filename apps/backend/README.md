@@ -22,18 +22,15 @@ npm install
 2. Configure `.env` in `apps/backend`:
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/eventdb
-JWT_SECRET=your_secret
+PORT=3000
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DB_NAME
+JWT_SECRET=your_jwt_secret
 FRONTEND_URL=http://localhost:3001
 OPENAI_API_KEY=your_openai_key
 PINECONE_API_KEY=your_pinecone_key
-PINECONE_INDEX=ai-event-index
+PINECONE_INDEX=your_pinecone_index_name
 ```
 
-`FRONTEND_URL` is used by backend CORS in `src/main.ts`:
-
-- `origin: process.env.FRONTEND_URL || 'http://localhost:3001'`
-- `credentials: true`
 
 If your frontend runs on a different domain/port, update `FRONTEND_URL` accordingly.
 
@@ -55,9 +52,9 @@ Default API URL: `http://localhost:3000`
 ## Modules
 
 - `auth`: register, login, current user
-- `organization`: create personal org, org details, org events/products, org admin endpoints
-- `event`: create/list/get/update/delete events
-- `product`: create/list/get/update/delete products
+- `organization`: create personal org, org details, org events/products
+- `event`: create events
+- `product`: create products
 - `feed`: mixed event + product feed with interaction stats
 - `interaction`: toggle `LIKE` / `SAVE` / `REGISTER`
 - `search`: semantic search with relevance score
@@ -75,32 +72,17 @@ All endpoints below are JWT-protected except register/login.
 ### Organization
 
 - `POST /organization/mine`
-- `POST /organization`
-- `GET /organization`
 - `GET /organization/:orgId`
-- `PUT /organization/:orgId`
-- `DELETE /organization/:orgId`
-- `POST /organization/:orgId/user/:userId`
-- `DELETE /organization/:orgId/user/:userId`
-- `GET /organization/:orgId/users`
 - `GET /organization/:orgId/events`
 - `GET /organization/:orgId/products`
 
 ### Event
 
 - `POST /event`
-- `GET /event`
-- `GET /event/:eventId`
-- `PUT /event/:eventId`
-- `DELETE /event/:eventId`
 
 ### Product
 
 - `POST /product`
-- `GET /product`
-- `GET /product/:productId`
-- `PUT /product/:productId`
-- `DELETE /product/:productId`
 
 ### Feed / Interaction / Search
 
