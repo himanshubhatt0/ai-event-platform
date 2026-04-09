@@ -56,18 +56,32 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 	- `NEXT_PUBLIC_API_URL=http://localhost:3000`
 	- `FRONTEND_URL=http://localhost:3001`
 
-### 3. Run database migrations (backend)
+### 3. Prisma migration workflow (backend)
 
-From `apps/backend`:
+Run all commands from `apps/backend`.
+
+Generate Prisma client (safe to run anytime):
 
 ```bash
-npx prisma migrate deploy
+npx prisma generate
 ```
 
-For local development with new schema changes:
+For local development when schema is changed:
 
 ```bash
-npx prisma migrate dev
+npx prisma migrate dev --name <migration_name>
+```
+
+What it does:
+
+- Creates a new SQL migration in `prisma/migrations`
+- Applies migration to your local DB
+- Regenerates Prisma client
+
+Useful verification commands:
+
+```bash
+npx prisma studio
 ```
 
 ### 4. Start apps
@@ -140,10 +154,3 @@ npm test
 - Strict request handling and validation:
 	- Pros: safer API contracts and fewer malformed requests.
 	- Tradeoff: development requires DTO discipline and explicit payload shaping.
-## Environment Quick Notes
-
-- Frontend base API URL is configured in `apps/frontend/.env.local` using `NEXT_PUBLIC_API_URL`.
-- Backend allowed browser origin is configured in `apps/backend/.env` using `FRONTEND_URL`.
-- For local setup, these usually are:
-	- `NEXT_PUBLIC_API_URL=http://localhost:3000`
-	- `FRONTEND_URL=http://localhost:3001`
