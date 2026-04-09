@@ -20,7 +20,6 @@ export default function EventsManagementPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
@@ -74,13 +73,6 @@ export default function EventsManagementPage() {
     }
   };
 
-  const formatDateTimeLocal = (value: string) => {
-    const date = new Date(value);
-    const pad = (n: number) => String(n).padStart(2, '0');
-
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -96,26 +88,16 @@ export default function EventsManagementPage() {
 
     try {
       setIsSubmitting(true);
-      if (editingId) {
-        // Update existing event
-        const updated = await organizationService.updateEvent(editingId, formData);
-        setEvents((prev) => prev.map((event) => (event.id === editingId ? updated : event)));
-        setToastType('success');
-        setToastMessage('Event updated successfully');
-      } else {
-        // Create new event
-        const newEvent = await organizationService.createEvent({
-          ...formData,
-          organizationId: orgId,
-        });
-        setEvents((prev) => [newEvent, ...prev]);
-        setToastType('success');
-        setToastMessage('Event created successfully');
-      }
+      const newEvent = await organizationService.createEvent({
+        ...formData,
+        organizationId: orgId,
+      });
+      setEvents((prev) => [newEvent, ...prev]);
+      setToastType('success');
+      setToastMessage('Event created successfully');
 
       setFormData({ title: '', description: '', date: '' });
       setShowCreateForm(false);
-      setEditingId(null);
     } catch (err: any) {
       setToastType('error');
       setToastMessage(extractApiErrorMessage(err, 'Failed to save event'));
@@ -124,19 +106,8 @@ export default function EventsManagementPage() {
     }
   };
 
-  const handleEdit = (event: Event) => {
-    setFormData({
-      title: event.title,
-      description: event.description,
-      date: formatDateTimeLocal(event.date),
-    });
-    setEditingId(event.id);
-    setShowCreateForm(true);
-  };
-
   const handleCancel = () => {
     setShowCreateForm(false);
-    setEditingId(null);
     setFormData({ title: '', description: '', date: '' });
   };
 
@@ -207,7 +178,6 @@ export default function EventsManagementPage() {
           <button
             onClick={() => {
               setShowCreateForm(!showCreateForm);
-              setEditingId(null);
               setFormData({ title: '', description: '', date: '' });
             }}
             className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
@@ -219,9 +189,7 @@ export default function EventsManagementPage() {
         {/* Create/Edit Form */}
         {showCreateForm && (
           <div className="mb-8 bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              {editingId ? 'Edit Event' : 'Create New Event'}
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Create New Event</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Title</label>
@@ -263,7 +231,7 @@ export default function EventsManagementPage() {
                   disabled={isSubmitting}
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
                 >
-                  {isSubmitting ? 'Saving...' : editingId ? 'Update Event' : 'Create Event'}
+                  {isSubmitting ? 'Saving...' : 'Create Event'}
                 </button>
                 <button
                   type="button"
@@ -304,18 +272,11 @@ export default function EventsManagementPage() {
                   </p>
                 )}
 
-                <div className="flex gap-3 pt-4 border-t">
-                  <button
-                    onClick={() => handleEdit(event)}
-                    disabled={Boolean(isDeletingId)}
-                    className="w-1/2 px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition"
-                  >
-                    Edit
-                  </button>
+                <div className="pt-4 border-t">
                   <button
                     onClick={() => setPendingDeleteId(event.id)}
                     disabled={Boolean(isDeletingId)}
-                    className="w-1/2 px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition"
+                    className="w-full px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition"
                   >
                     {isDeletingId === event.id ? 'Deleting...' : 'Delete'}
                   </button>

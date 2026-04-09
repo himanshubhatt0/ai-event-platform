@@ -20,7 +20,6 @@ export default function ProductsManagementPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
@@ -96,32 +95,18 @@ export default function ProductsManagementPage() {
 
     try {
       setIsSubmitting(true);
-      if (editingId) {
-        // Update existing product
-        const updated = await organizationService.updateProduct(editingId, {
-          title: formData.title,
-          description: formData.description,
-          price,
-        });
-        setProducts((prev) => prev.map((product) => (product.id === editingId ? updated : product)));
-        setToastType('success');
-        setToastMessage('Product updated successfully');
-      } else {
-        // Create new product
-        const newProduct = await organizationService.createProduct({
-          title: formData.title,
-          description: formData.description,
-          price,
-          organizationId: orgId,
-        });
-        setProducts((prev) => [newProduct, ...prev]);
-        setToastType('success');
-        setToastMessage('Product created successfully');
-      }
+      const newProduct = await organizationService.createProduct({
+        title: formData.title,
+        description: formData.description,
+        price,
+        organizationId: orgId,
+      });
+      setProducts((prev) => [newProduct, ...prev]);
+      setToastType('success');
+      setToastMessage('Product created successfully');
 
       setFormData({ title: '', description: '', price: '' });
       setShowCreateForm(false);
-      setEditingId(null);
     } catch (err: any) {
       setToastType('error');
       setToastMessage(extractApiErrorMessage(err, 'Failed to save product'));
@@ -130,19 +115,8 @@ export default function ProductsManagementPage() {
     }
   };
 
-  const handleEdit = (product: Product) => {
-    setFormData({
-      title: product.title,
-      description: product.description,
-      price: product.price.toString(),
-    });
-    setEditingId(product.id);
-    setShowCreateForm(true);
-  };
-
   const handleCancel = () => {
     setShowCreateForm(false);
-    setEditingId(null);
     setFormData({ title: '', description: '', price: '' });
   };
 
@@ -213,7 +187,6 @@ export default function ProductsManagementPage() {
           <button
             onClick={() => {
               setShowCreateForm(!showCreateForm);
-              setEditingId(null);
               setFormData({ title: '', description: '', price: '' });
             }}
             className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
@@ -225,9 +198,7 @@ export default function ProductsManagementPage() {
         {/* Create/Edit Form */}
         {showCreateForm && (
           <div className="mb-8 bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              {editingId ? 'Edit Product' : 'Create New Product'}
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Create New Product</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Title</label>
@@ -272,7 +243,7 @@ export default function ProductsManagementPage() {
                   disabled={isSubmitting}
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
                 >
-                  {isSubmitting ? 'Saving...' : editingId ? 'Update Product' : 'Create Product'}
+                  {isSubmitting ? 'Saving...' : 'Create Product'}
                 </button>
                 <button
                   type="button"
@@ -309,18 +280,11 @@ export default function ProductsManagementPage() {
                   Created: {new Date(product.createdAt).toLocaleDateString()}
                 </p>
 
-                <div className="flex gap-3 pt-4 border-t">
-                  <button
-                    onClick={() => handleEdit(product)}
-                    disabled={Boolean(isDeletingId)}
-                    className="w-1/2 px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition text-sm"
-                  >
-                    Edit
-                  </button>
+                <div className="pt-4 border-t">
                   <button
                     onClick={() => setPendingDeleteId(product.id)}
                     disabled={Boolean(isDeletingId)}
-                    className="w-1/2 px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition text-sm"
+                    className="w-full px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition text-sm"
                   >
                     {isDeletingId === product.id ? 'Deleting...' : 'Delete'}
                   </button>
