@@ -124,8 +124,8 @@ export default function EventsManagementPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <Link href="/organization" className="text-indigo-600 hover:text-indigo-700 font-medium mb-2 inline-block">
-              ← Back to Organizations
+            <Link href="/dashboard" className="text-indigo-600 hover:text-indigo-700 font-medium mb-2 inline-block">
+              ← Back to Dashboard
             </Link>
             <h1 className="text-4xl font-bold text-gray-900">Events - {organization?.name}</h1>
             <p className="mt-2 text-gray-600">Create and manage events for this organization</p>
@@ -135,13 +135,13 @@ export default function EventsManagementPage() {
               setShowCreateForm(!showCreateForm);
               setFormData({ title: '', description: '', date: '' });
             }}
-            className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+            className="px-6 py-3 cursor-pointer bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
           >
             {showCreateForm ? 'Cancel' : 'Create Event'}
           </button>
         </div>
 
-        {/* Create/Edit Form */}
+        {/* Create Form */}
         {showCreateForm && (
           <div className="mb-8 bg-white p-6 rounded-lg shadow">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Create New Event</h2>
@@ -184,7 +184,7 @@ export default function EventsManagementPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+                  className="flex-1 px-4 py-2 cursor-pointer bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
                 >
                   {isSubmitting ? 'Saving...' : 'Create Event'}
                 </button>
@@ -192,7 +192,7 @@ export default function EventsManagementPage() {
                   type="button"
                   onClick={handleCancel}
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-900 font-medium rounded-lg hover:bg-gray-400 transition"
+                  className="flex-1 px-4 py-2 cursor-pointer bg-gray-300 text-gray-900 font-medium rounded-lg hover:bg-gray-400 transition"
                 >
                   Cancel
                 </button>
