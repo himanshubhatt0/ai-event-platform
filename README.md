@@ -100,7 +100,13 @@ cd apps/frontend
 npm run dev
 ```
 
-### 5. Run tests
+### 5. Swagger API docs (backend)
+
+After backend is running, open:
+
+- http://localhost:3000/api/docs
+
+### 6. Run tests
 
 Backend tests:
 
