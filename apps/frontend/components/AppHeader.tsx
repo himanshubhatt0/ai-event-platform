@@ -223,7 +223,7 @@ export default function AppHeader() {
                   setIsCreateOrgPopupOpen(true);
                 }}
                 disabled={isCreatingOrganization}
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-sm cursor-pointer font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isCreatingOrganization ? 'Creating...' : 'Create Organization'}
               </button>
