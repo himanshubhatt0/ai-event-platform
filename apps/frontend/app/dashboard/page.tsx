@@ -3,7 +3,7 @@
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { getCookie } from '@/utils/cookies';
 
 export default function DashboardPage() {
