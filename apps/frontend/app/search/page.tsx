@@ -106,7 +106,7 @@ export default function SearchPage() {
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-60"
+              className="px-5 py-2 cursor-pointer bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-60"
             >
               {loading ? 'Searching...' : 'Search'}
             </button>
@@ -149,7 +149,7 @@ export default function SearchPage() {
                         <button
                           key={action}
                           onClick={() => handleInteraction(item, action)}
-                          className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                          className={`px-4 py-2 cursor-pointer rounded-md text-sm font-medium transition ${
                             isActive
                               ? 'bg-indigo-600 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
