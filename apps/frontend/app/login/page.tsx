@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearFeedback, loginUser } from '@/redux/slices/authSlice';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getCookie } from '@/utils/cookies';
 import { Toast } from '@/components/Toast';
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { loading, error, success } = useSelector((state: any) => state.auth);
 
   useEffect(() => {
@@ -23,6 +24,18 @@ export default function LoginPage() {
       router.replace('/dashboard');
     }
   }, [router]);
+
+  useEffect(() => {
+    const successMessage = searchParams.get('success');
+
+    if (!successMessage) {
+      return;
+    }
+
+    setToastType('success');
+    setToastMessage(successMessage);
+    router.replace('/login');
+  }, [router, searchParams]);
 
   useEffect(() => {
     if (error) {
@@ -101,7 +114,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+              className="group relative cursor-pointer w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out"
             >
               {loading ? (
                 <div className="flex items-center">

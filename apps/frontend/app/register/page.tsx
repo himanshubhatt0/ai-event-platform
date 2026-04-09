@@ -36,7 +36,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (success) {
       dispatch(clearFeedback());
-      router.replace('/login');
+      router.replace(`/login?success=${encodeURIComponent(success)}`);
     }
   }, [dispatch, success, router]);
 
