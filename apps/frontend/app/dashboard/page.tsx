@@ -3,7 +3,7 @@
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { getCookie } from '@/utils/cookies';
 import { Toast } from '@/components/Toast';
 
@@ -12,16 +12,17 @@ export default function DashboardPage() {
   const router = useRouter();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
-  const authToken = getCookie('auth_token');
-  const isAuthenticated = Boolean(token || authToken);
+  const isHydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const cookieToken = isHydrated ? getCookie('auth_token') : null;
+  const isAuthenticated = Boolean(token || cookieToken);
 
   const isOrgUser = Boolean(user?.organizationId);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    }
-
     const toast = sessionStorage.getItem('toast_message');
     if (toast) {
       const payload = JSON.parse(toast);
@@ -29,9 +30,15 @@ export default function DashboardPage() {
       setToastMessage(payload.message);
       sessionStorage.removeItem('toast_message');
     }
-  }, [isAuthenticated, router]);
+  }, []);
 
-  if (!isAuthenticated) {
+  useEffect(() => {
+    if (isHydrated && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isHydrated, isAuthenticated, router]);
+
+  if (!isHydrated || !isAuthenticated) {
     return null;
   }
 

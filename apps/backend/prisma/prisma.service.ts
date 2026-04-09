@@ -64,10 +64,12 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   }
 
   get $transaction() {
-    return getPrismaClient().$transaction;
+    const client = getPrismaClient();
+    return client.$transaction.bind(client);
   }
 
   get $on() {
-    return getPrismaClient().$on;
+    const client = getPrismaClient();
+    return client.$on.bind(client);
   }
 }

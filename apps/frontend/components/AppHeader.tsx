@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout, setToken, setUser } from '@/redux/slices/authSlice';
 import { getCookie, setCookie } from '@/utils/cookies';
@@ -74,15 +74,20 @@ export default function AppHeader() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { user, token } = useSelector((state: RootState) => state.auth);
-  const authToken = getCookie('auth_token');
-  const isAuthenticated = Boolean(token || authToken);
+  const isHydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const cookieToken = isHydrated ? getCookie('auth_token') : null;
+  const isAuthenticated = Boolean(token || cookieToken);
   const breadcrumbs = getBreadcrumbs(pathname);
   const [isCreatingOrganization, setIsCreatingOrganization] = useState(false);
   const [isCreateOrgPopupOpen, setIsCreateOrgPopupOpen] = useState(false);
   const [newOrganizationName, setNewOrganizationName] = useState('');
   const [createOrgError, setCreateOrgError] = useState<string | null>(null);
 
-  if (HIDDEN_ROUTES.has(pathname) || !isAuthenticated) {
+  if (!isHydrated || HIDDEN_ROUTES.has(pathname) || !isAuthenticated) {
     return null;
   }
 
