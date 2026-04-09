@@ -105,66 +105,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Links</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Link
-                  href="/feed"
-                  className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
-                >
-                  <div className="shrink-0 h-10 w-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
-                    🎯
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-900">Open Feed</p>
-                    <p className="text-xs text-gray-500">Browse events and products</p>
-                  </div>
-                </Link>
-                <Link
-                  href="/search"
-                  className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
-                >
-                  <div className="shrink-0 h-10 w-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                    🔎
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-900">Semantic Search</p>
-                    <p className="text-xs text-gray-500">Find relevant items by intent</p>
-                  </div>
-                </Link>
-                {isOrgUser && (
-                  <Link
-                    href={`/organization/${user.organizationId}/events`}
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
-                  >
-                    <div className="shrink-0 h-10 w-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
-                      📋
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-900">Manage Events</p>
-                      <p className="text-xs text-gray-500">Create and edit your organization&apos;s events</p>
-                    </div>
-                  </Link>
-                )}
-                {isOrgUser && (
-                  <Link
-                    href={`/organization/${user.organizationId}/products`}
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
-                  >
-                    <div className="shrink-0 h-10 w-10 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold">
-                      🛍️
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-900">Manage Products</p>
-                      <p className="text-xs text-gray-500">Create and edit your organization&apos;s products</p>
-                    </div>
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
       </main>
     </div>
