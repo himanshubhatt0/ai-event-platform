@@ -7,6 +7,8 @@ import { getCookie } from '@/utils/cookies';
 import { organizationService, Event, Organization } from '@/services/organization.service';
 import Link from 'next/link';
 import { Toast } from '@/components/Toast';
+import { PopupModal } from '@/components/PopupModal';
+import { extractApiErrorMessage } from '@/utils/apiError';
 
 export default function EventsManagementPage() {
   const router = useRouter();
@@ -19,6 +21,7 @@ export default function EventsManagementPage() {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
@@ -62,9 +65,8 @@ export default function EventsManagementPage() {
       setOrganization(orgData);
       setEvents(eventsData);
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Failed to fetch data';
       setToastType('error');
-      setToastMessage(errorMessage);
+      setToastMessage(extractApiErrorMessage(err, 'Failed to fetch data'));
     } finally {
       setLoading(false);
     }
@@ -101,9 +103,8 @@ export default function EventsManagementPage() {
       setShowCreateForm(false);
       setEditingId(null);
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Failed to save event';
       setToastType('error');
-      setToastMessage(errorMessage);
+      setToastMessage(extractApiErrorMessage(err, 'Failed to save event'));
     }
   };
 
@@ -124,19 +125,15 @@ export default function EventsManagementPage() {
   };
 
   const handleDelete = async (eventId: string) => {
-    if (!confirm('Are you sure you want to delete this event?')) {
-      return;
-    }
-
     try {
       await organizationService.deleteEvent(eventId);
       setEvents(events.filter((e) => e.id !== eventId));
       setToastType('success');
       setToastMessage('Event deleted successfully');
+      setPendingDeleteId(null);
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Failed to delete event';
       setToastType('error');
-      setToastMessage(errorMessage);
+      setToastMessage(extractApiErrorMessage(err, 'Failed to delete event'));
     }
   };
 
@@ -151,6 +148,27 @@ export default function EventsManagementPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
+      <PopupModal
+        isOpen={Boolean(pendingDeleteId)}
+        title="Delete event?"
+        description="This action cannot be undone."
+        actions={[
+          {
+            label: 'Cancel',
+            variant: 'secondary',
+            onClick: () => setPendingDeleteId(null),
+          },
+          {
+            label: 'Delete',
+            variant: 'danger',
+            onClick: () => {
+              if (pendingDeleteId) {
+                handleDelete(pendingDeleteId);
+              }
+            },
+          },
+        ]}
+      />
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -268,7 +286,7 @@ export default function EventsManagementPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(event.id)}
+                    onClick={() => setPendingDeleteId(event.id)}
                     className="w-1/2 px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition"
                   >
                     Delete

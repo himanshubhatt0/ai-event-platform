@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import type { AppDispatch } from '@/redux/store';
-import authReducer, { loginUser, registerUser, logout } from '@/redux/slices/authSlice';
+import authReducer, { clearFeedback, loginUser, registerUser, logout } from '@/redux/slices/authSlice';
 import { api } from '@/services/api';
 
 // Mock the API
@@ -28,7 +28,7 @@ describe('authSlice', () => {
       const mockToken = 'mock-jwt-token';
 
       // Mock API responses
-      mockedApi.post.mockResolvedValueOnce({ data: { access_token: mockToken } });
+      mockedApi.post.mockResolvedValueOnce({ data: { access_token: mockToken, message: 'Login successful' } });
       mockedApi.get.mockResolvedValueOnce({ data: mockUser });
 
       await (store.dispatch as AppDispatch)(loginUser({ email: 'test@example.com', password: 'password' }));
@@ -38,11 +38,16 @@ describe('authSlice', () => {
       expect(state.token).toBe(mockToken);
       expect(state.loading).toBe(false);
       expect(state.error).toBe(null);
+      expect(state.success).toBe('Login successful');
     });
 
-    it('should handle login failure', async () => {
-      const errorMessage = 'Invalid credentials';
-      mockedApi.post.mockRejectedValueOnce(new Error(errorMessage));
+    it('should handle login failure with backend message', async () => {
+      const errorMessage = 'Invalid email or password';
+      mockedApi.post.mockRejectedValueOnce({
+        response: {
+          data: { message: errorMessage, statusCode: 400 },
+        },
+      });
 
       await (store.dispatch as AppDispatch)(loginUser({ email: 'test@example.com', password: 'wrongpassword' }));
 
@@ -59,7 +64,9 @@ describe('authSlice', () => {
       const mockUser = { id: '1', email: 'test@example.com', name: 'Test User' };
 
       // Mock API response for registration
-      mockedApi.post.mockResolvedValueOnce({ data: mockUser });
+      mockedApi.post.mockResolvedValueOnce({
+        data: { user: mockUser, message: 'Registration successful' },
+      });
 
       await (store.dispatch as AppDispatch)(registerUser({ email: 'test@example.com', password: 'password', name: 'Test User' }));
 
@@ -68,6 +75,7 @@ describe('authSlice', () => {
       expect(state.token).toBe(null);
       expect(state.loading).toBe(false);
       expect(state.error).toBe(null);
+      expect(state.success).toBe('Registration successful');
     });
 
     it('should handle registration failure', async () => {
@@ -81,6 +89,30 @@ describe('authSlice', () => {
       expect(state.token).toBe(null);
       expect(state.loading).toBe(false);
       expect(state.error).toBe(errorMessage);
+    });
+  });
+
+  describe('clearFeedback', () => {
+    it('should clear success and error messages', () => {
+      store.dispatch({
+        type: 'auth/login/fulfilled',
+        payload: {
+          access_token: 'token',
+          user: { id: '1', email: 'test@example.com' },
+          message: 'Login successful',
+        },
+      });
+
+      store.dispatch({
+        type: 'auth/register/rejected',
+        payload: 'Registration failed',
+      });
+
+      store.dispatch(clearFeedback());
+
+      const state = getAuthState();
+      expect(state.error).toBe(null);
+      expect(state.success).toBe(null);
     });
   });
 

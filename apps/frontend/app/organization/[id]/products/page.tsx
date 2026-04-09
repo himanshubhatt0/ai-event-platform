@@ -7,6 +7,8 @@ import { getCookie } from '@/utils/cookies';
 import { organizationService, Product, Organization } from '@/services/organization.service';
 import Link from 'next/link';
 import { Toast } from '@/components/Toast';
+import { PopupModal } from '@/components/PopupModal';
+import { extractApiErrorMessage } from '@/utils/apiError';
 
 export default function ProductsManagementPage() {
   const router = useRouter();
@@ -19,6 +21,7 @@ export default function ProductsManagementPage() {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
@@ -62,9 +65,8 @@ export default function ProductsManagementPage() {
       setOrganization(orgData);
       setProducts(productsData);
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Failed to fetch data';
       setToastType('error');
-      setToastMessage(errorMessage);
+      setToastMessage(extractApiErrorMessage(err, 'Failed to fetch data'));
     } finally {
       setLoading(false);
     }
@@ -114,9 +116,8 @@ export default function ProductsManagementPage() {
       setShowCreateForm(false);
       setEditingId(null);
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Failed to save product';
       setToastType('error');
-      setToastMessage(errorMessage);
+      setToastMessage(extractApiErrorMessage(err, 'Failed to save product'));
     }
   };
 
@@ -137,19 +138,15 @@ export default function ProductsManagementPage() {
   };
 
   const handleDelete = async (productId: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) {
-      return;
-    }
-
     try {
       await organizationService.deleteProduct(productId);
       setProducts(products.filter((p) => p.id !== productId));
       setToastType('success');
       setToastMessage('Product deleted successfully');
+      setPendingDeleteId(null);
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || 'Failed to delete product';
       setToastType('error');
-      setToastMessage(errorMessage);
+      setToastMessage(extractApiErrorMessage(err, 'Failed to delete product'));
     }
   };
 
@@ -164,6 +161,27 @@ export default function ProductsManagementPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Toast message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />
+      <PopupModal
+        isOpen={Boolean(pendingDeleteId)}
+        title="Delete product?"
+        description="This action cannot be undone."
+        actions={[
+          {
+            label: 'Cancel',
+            variant: 'secondary',
+            onClick: () => setPendingDeleteId(null),
+          },
+          {
+            label: 'Delete',
+            variant: 'danger',
+            onClick: () => {
+              if (pendingDeleteId) {
+                handleDelete(pendingDeleteId);
+              }
+            },
+          },
+        ]}
+      />
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -280,7 +298,7 @@ export default function ProductsManagementPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(product.id)}
+                    onClick={() => setPendingDeleteId(product.id)}
                     className="w-1/2 px-4 py-2 bg-red-600 text-white font-medium rounded hover:bg-red-700 transition text-sm"
                   >
                     Delete

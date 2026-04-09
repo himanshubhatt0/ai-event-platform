@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { loginApi, registerApi, getMeApi } from '@/services/auth.service';
 import { setCookie, deleteCookie } from '@/utils/cookies';
+import { extractApiErrorMessage } from '@/utils/apiError';
 
 interface AuthState {
   user: any;
@@ -20,19 +21,33 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/login',
-  async ({ email, password }: { email: string; password: string }) => {
-    const response = await loginApi(email, password);
-    setCookie('auth_token', response.access_token, 1);
-    const user = await getMeApi();
-    return { access_token: response.access_token, user, message: response.message };
+  async (
+    { email, password }: { email: string; password: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await loginApi(email, password);
+      setCookie('auth_token', response.access_token, 1);
+      const user = await getMeApi();
+      return { access_token: response.access_token, user, message: response.message };
+    } catch (error) {
+      return rejectWithValue(extractApiErrorMessage(error, 'Login failed'));
+    }
   }
 );
 
 export const registerUser = createAsyncThunk(
   'auth/register',
-  async ({ email, password, name }: { email: string; password: string; name: string }) => {
-    const response = await registerApi(email, password, name);
-    return { user: response.user, message: response.message };
+  async (
+    { email, password, name }: { email: string; password: string; name: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await registerApi(email, password, name);
+      return { user: response.user, message: response.message };
+    } catch (error) {
+      return rejectWithValue(extractApiErrorMessage(error, 'Registration failed'));
+    }
   }
 );
 
@@ -59,6 +74,10 @@ const authSlice = createSlice({
       state.error = null;
       state.success = null;
     },
+    clearFeedback(state) {
+      state.error = null;
+      state.success = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -77,7 +96,7 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.success = null;
-        state.error = action.error.message || 'Login failed';
+        state.error = (action.payload as string) || action.error.message || 'Login failed';
       })
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
@@ -92,10 +111,10 @@ const authSlice = createSlice({
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.success = null;
-        state.error = action.error.message || 'Registration failed';
+        state.error = (action.payload as string) || action.error.message || 'Registration failed';
       });
   },
 });
 
-export const { logout, setToken, setUser, clearAuth } = authSlice.actions;
+export const { logout, setToken, setUser, clearAuth, clearFeedback } = authSlice.actions;
 export default authSlice.reducer;

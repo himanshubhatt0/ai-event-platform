@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '@/redux/slices/authSlice';
+import { clearFeedback, loginUser } from '@/redux/slices/authSlice';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getCookie } from '@/utils/cookies';
@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (getCookie('auth_token')) {
-      router.push('/dashboard');
+      router.replace('/dashboard');
     }
   }, [router]);
 
@@ -28,26 +28,26 @@ export default function LoginPage() {
     if (error) {
       setToastType('error');
       setToastMessage(error);
+      dispatch(clearFeedback());
     }
-  }, [error]);
+  }, [dispatch, error]);
 
   useEffect(() => {
     if (success) {
-      setToastType('success');
-      setToastMessage(success);
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 3000);
+      dispatch(clearFeedback());
+      router.replace('/dashboard');
     }
-  }, [success, router]);
+  }, [dispatch, success, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setToastMessage(null);
+    dispatch(clearFeedback());
+
     try {
       await dispatch(loginUser({ email, password })).unwrap();
-    } catch (err: any) {
-      setToastType('error');
-      setToastMessage(err?.message || 'Login failed.');
+    } catch {
+      // Error is handled by redux state and displayed by the effect above.
     }
   };
 

@@ -8,7 +8,8 @@ import { logout, setToken, setUser } from '@/redux/slices/authSlice';
 import { getCookie, setCookie } from '@/utils/cookies';
 import { RootState } from '@/redux/store';
 import { organizationService } from '@/services/organization.service';
-import type { AxiosError } from 'axios';
+import { PopupModal } from '@/components/PopupModal';
+import { extractApiErrorMessage } from '@/utils/apiError';
 
 const HIDDEN_ROUTES = new Set(['/login', '/register']);
 
@@ -77,6 +78,9 @@ export default function AppHeader() {
   const isAuthenticated = Boolean(token || authToken);
   const breadcrumbs = getBreadcrumbs(pathname);
   const [isCreatingOrganization, setIsCreatingOrganization] = useState(false);
+  const [isCreateOrgPopupOpen, setIsCreateOrgPopupOpen] = useState(false);
+  const [newOrganizationName, setNewOrganizationName] = useState('');
+  const [createOrgError, setCreateOrgError] = useState<string | null>(null);
 
   if (HIDDEN_ROUTES.has(pathname) || !isAuthenticated) {
     return null;
@@ -92,26 +96,27 @@ export default function AppHeader() {
       return;
     }
 
-    const name = window.prompt('Enter your organization name');
-    if (!name || !name.trim()) {
+    const name = newOrganizationName.trim();
+    if (!name) {
+      setCreateOrgError('Organization name is required.');
       return;
     }
 
     try {
       setIsCreatingOrganization(true);
-      const response = await organizationService.createMyOrganization(name.trim());
+      setCreateOrgError(null);
+      const response = await organizationService.createMyOrganization(name);
 
       setCookie('auth_token', response.access_token, 1);
       dispatch(setToken(response.access_token));
       dispatch(setUser(response.user));
+      setIsCreateOrgPopupOpen(false);
+      setNewOrganizationName('');
       router.push(`/organization/${response.user.organizationId}/events`);
     } catch (error) {
-      const fallback = 'Failed to create organization. Please try again.';
-      const message =
-        (error as AxiosError<{ message?: string }>).response?.data?.message ||
-        (error as Error).message ||
-        fallback;
-      window.alert(message);
+      setCreateOrgError(
+        extractApiErrorMessage(error, 'Failed to create organization. Please try again.'),
+      );
     } finally {
       setIsCreatingOrganization(false);
     }
@@ -119,6 +124,49 @@ export default function AppHeader() {
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
+      <PopupModal
+        isOpen={isCreateOrgPopupOpen}
+        title="Create organization"
+        description="Add your organization name to continue."
+        actions={[
+          {
+            label: 'Cancel',
+            variant: 'secondary',
+            disabled: isCreatingOrganization,
+            onClick: () => {
+              setIsCreateOrgPopupOpen(false);
+              setCreateOrgError(null);
+              setNewOrganizationName('');
+            },
+          },
+          {
+            label: isCreatingOrganization ? 'Creating...' : 'Create',
+            variant: 'primary',
+            disabled: isCreatingOrganization,
+            onClick: handleCreateOrganization,
+          },
+        ]}
+      >
+        <label className="block text-sm font-medium text-gray-700" htmlFor="organization-name">
+          Organization name
+        </label>
+        <input
+          id="organization-name"
+          type="text"
+          value={newOrganizationName}
+          onChange={(event) => {
+            setNewOrganizationName(event.target.value);
+            if (createOrgError) {
+              setCreateOrgError(null);
+            }
+          }}
+          maxLength={120}
+          className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          placeholder="Enter organization name"
+        />
+        {createOrgError && <p className="mt-2 text-sm text-red-600">{createOrgError}</p>}
+      </PopupModal>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div>
@@ -165,7 +213,10 @@ export default function AppHeader() {
             )}
             {!user?.organizationId && (
               <button
-                onClick={handleCreateOrganization}
+                onClick={() => {
+                  setCreateOrgError(null);
+                  setIsCreateOrgPopupOpen(true);
+                }}
                 disabled={isCreatingOrganization}
                 className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >

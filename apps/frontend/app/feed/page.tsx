@@ -9,6 +9,7 @@ import {
   marketplaceService,
 } from '@/services/marketplace.service';
 import { Toast } from '@/components/Toast';
+import { extractApiErrorMessage } from '@/utils/apiError';
 
 function formatInteractionLabel(type: InteractionType) {
   if (type === 'REGISTER') {
@@ -33,7 +34,7 @@ export default function FeedPage() {
       setFeed(items);
     } catch (err: any) {
       setToastType('error');
-      setToastMessage(err?.response?.data?.message || 'Failed to load feed');
+      setToastMessage(extractApiErrorMessage(err, 'Failed to load feed'));
     } finally {
       setLoading(false);
     }
@@ -58,7 +59,7 @@ export default function FeedPage() {
       await fetchFeed();
     } catch (err: any) {
       setToastType('error');
-      setToastMessage(err?.response?.data?.message || 'Failed to update interaction');
+      setToastMessage(extractApiErrorMessage(err, 'Failed to update interaction'));
     }
   };
 

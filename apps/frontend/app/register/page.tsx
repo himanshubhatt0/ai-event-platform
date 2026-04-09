@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerUser } from '@/redux/slices/authSlice';
+import { clearFeedback, registerUser } from '@/redux/slices/authSlice';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getCookie } from '@/utils/cookies';
@@ -21,7 +21,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (getCookie('auth_token')) {
-      router.push('/dashboard');
+      router.replace('/dashboard');
     }
   }, [router]);
 
@@ -29,28 +29,26 @@ export default function RegisterPage() {
     if (error) {
       setToastType('error');
       setToastMessage(error);
+      dispatch(clearFeedback());
     }
-  }, [error]);
+  }, [dispatch, error]);
 
   useEffect(() => {
     if (success) {
-      setToastType('success');
-      setToastMessage(success);
-      setTimeout(() => {
-        router.push('/login');
-      }, 3000);
+      dispatch(clearFeedback());
+      router.replace('/login');
     }
-  }, [success, router]);
+  }, [dispatch, success, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setToastMessage(null);
+    dispatch(clearFeedback());
 
     try {
       await dispatch(registerUser({ email, password, name })).unwrap();
-    } catch (err: any) {
-      console.error('Registration error:', err);
-      setToastType('error');
-      setToastMessage(err?.message || 'Registration failed.');
+    } catch {
+      // Error is handled by redux state and displayed by the effect above.
     }
   };
 

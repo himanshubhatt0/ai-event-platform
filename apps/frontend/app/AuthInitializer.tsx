@@ -7,10 +7,14 @@ import { getMeApi } from '@/services/auth.service';
 import { RootState } from '@/redux/store';
 import { setToken, setUser, clearAuth } from '@/redux/slices/authSlice';
 
+let meRequestInFlight: Promise<unknown> | null = null;
+let meRequestToken: string | null = null;
+
 export default function AuthInitializer({ children }: { children: ReactNode }) {
   const dispatch = useDispatch();
   const token = useSelector((state: RootState) => state.auth.token);
   const user = useSelector((state: RootState) => state.auth.user);
+  const isAuthLoading = useSelector((state: RootState) => state.auth.loading);
 
   useEffect(() => {
     const authToken = getCookie('auth_token');
@@ -23,15 +27,26 @@ export default function AuthInitializer({ children }: { children: ReactNode }) {
       dispatch(setToken(authToken));
     }
 
-    if (!user) {
-      getMeApi()
-        .then((me) => dispatch(setUser(me)))
-        .catch(() => {
-          dispatch(clearAuth());
-          deleteCookie('auth_token');
-        });
+    if (user || isAuthLoading) {
+      return;
     }
-  }, [dispatch, token, user]);
+
+    if (!meRequestInFlight || meRequestToken !== authToken) {
+      meRequestToken = authToken;
+      meRequestInFlight = getMeApi();
+    }
+
+    meRequestInFlight
+      .then((me) => dispatch(setUser(me)))
+      .catch(() => {
+        dispatch(clearAuth());
+        deleteCookie('auth_token');
+      })
+      .finally(() => {
+        meRequestInFlight = null;
+        meRequestToken = null;
+      });
+  }, [dispatch, isAuthLoading, token, user]);
 
   return <>{children}</>;
 }

@@ -7,6 +7,7 @@ import {
   marketplaceService,
 } from '@/services/marketplace.service';
 import { Toast } from '@/components/Toast';
+import { extractApiErrorMessage } from '@/utils/apiError';
 
 function formatInteractionLabel(type: InteractionType) {
   if (type === 'REGISTER') {
@@ -38,7 +39,7 @@ export default function SearchPage() {
       setResults(items);
     } catch (err: any) {
       setToastType('error');
-      setToastMessage(err?.response?.data?.message || 'Search failed');
+      setToastMessage(extractApiErrorMessage(err, 'Search failed'));
     } finally {
       setLoading(false);
     }
@@ -79,7 +80,7 @@ export default function SearchPage() {
       );
     } catch (err: any) {
       setToastType('error');
-      setToastMessage(err?.response?.data?.message || 'Failed to update interaction');
+      setToastMessage(extractApiErrorMessage(err, 'Failed to update interaction'));
     }
   };
 
