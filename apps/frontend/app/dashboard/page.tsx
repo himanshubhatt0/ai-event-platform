@@ -23,16 +23,6 @@ export default function DashboardPage() {
   const isOrgUser = Boolean(user?.organizationId);
 
   useEffect(() => {
-    const toast = sessionStorage.getItem('toast_message');
-    if (toast) {
-      const payload = JSON.parse(toast);
-      setToastType(payload.type);
-      setToastMessage(payload.message);
-      sessionStorage.removeItem('toast_message');
-    }
-  }, []);
-
-  useEffect(() => {
     if (isHydrated && !isAuthenticated) {
       router.push('/login');
     }
